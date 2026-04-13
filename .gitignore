@@ -1,0 +1,30 @@
+# Default ignored files
+/shelf/
+/.idea/workspace.xml
+# Ignored default folder with query files
+/queries/
+# Datasource local storage ignored files
+/dataSources/
+/dataSources.local.xml
+# Editor-based HTTP Client requests
+/httpRequests/
+
+# IntelliJ
+.idea/
+*.iml
+
+# Gradle
+build/
+.gradle/
+
+# Spring Boot
+application-local.yml
+application-secret.yml
+*.env
+
+# H2 DB 파일
+*.db
+
+# OS
+.DS_Store
+Thumbs.db

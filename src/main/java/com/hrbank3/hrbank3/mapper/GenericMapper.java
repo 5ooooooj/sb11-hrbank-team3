@@ -16,9 +16,9 @@ public interface GenericMapper<D, E> {
   List<D> toDtoList(List<E> entityList);
 
   // Dto 리스트 -> Entity 리스트로 변환
-  List<E> toEntity(List<D> dtoList);
+  List<E> toEntityList(List<D> dtoList);
 
   // null 값일 경우 무시하고 아닌 경우에만 치환
   @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
-  void updateDto(D dto, @MappingTarget E entity);
+  void updateFromDto(D dto, @MappingTarget E entity);
 }

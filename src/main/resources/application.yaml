@@ -17,4 +17,4 @@ springdoc:
 
 file:
   upload:
-    path: C:/uploads/
+    path: ${FILE_UPLOAD_PATH:./uploads/}

@@ -7,7 +7,7 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
-import java.time.ZonedDateTime;
+import java.time.Instant;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -19,7 +19,7 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @EntityListeners(AuditingEntityListener.class)
-public class FileMetaData {
+public class FileMetadata {
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   private Long id;
@@ -41,9 +41,9 @@ public class FileMetaData {
 
   @CreatedDate
   @Column(name = "created_at", nullable = false, updatable = false)
-  private ZonedDateTime createdAt;
+  private Instant createdAt;
 
-  public FileMetaData(String originalName, String storedName, String contentType, Long size, String storagePath) {
+  public FileMetadata(String originalName, String storedName, String contentType, Long size, String storagePath) {
     this.originalName = originalName;
     this.storedName = storedName;
     this.contentType = contentType;

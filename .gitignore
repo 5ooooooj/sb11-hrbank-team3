@@ -28,3 +28,6 @@ application-secret.yml
 # OS
 .DS_Store
 Thumbs.db
+
+# File Uploads (로컬 테스트용 폴더 제외)
+/uploads/

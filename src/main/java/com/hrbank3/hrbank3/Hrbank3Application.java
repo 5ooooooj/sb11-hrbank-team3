@@ -8,8 +8,7 @@ import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
 @SpringBootApplication
 public class Hrbank3Application {
 
-	public static void main(String[] args) {
-		SpringApplication.run(Hrbank3Application.class, args);
-	}
-
+  public static void main(String[] args) {
+    SpringApplication.run(Hrbank3Application.class, args);
+  }
 }

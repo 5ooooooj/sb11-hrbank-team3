@@ -1,5 +1,6 @@
 package com.hrbank3.hrbank3.entity;
 
+import com.hrbank3.hrbank3.entity.FileMetadata;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -43,7 +44,7 @@ public class BackupHistory {
   @OneToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "file_id")
   // TODO : File 엔티티 들어오면 맵핑
-  private File file;
+  private FileMetadata file;
 
   public BackupHistory(String worker) {
     this.worker = worker;
@@ -51,13 +52,13 @@ public class BackupHistory {
     this.status = BackupStatus.IN_PROGRESS;
   }
 
-  public void updateComplete(File file) {
+  public void updateComplete(FileMetadata file) {
     this.status = BackupStatus.COMPLETE;
     this.endedAt = Instant.now();
     this.file = file;
   }
 
-  public void updateFail(File file) {
+  public void updateFail(FileMetadata file) {
     this.status = BackupStatus.FAILED;
     this.endedAt = Instant.now();
     this.file = file;

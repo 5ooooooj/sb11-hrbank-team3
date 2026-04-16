@@ -39,8 +39,8 @@ public class FileUploadService {
       throw new IllegalArgumentException("파일 용량은 10MB를 초과할 수 없습니다.");
     }
     // 확장자 검증
-    String originalName = multipartFile.getOriginalFilename();
-    String ext = originalName.substring(originalName.lastIndexOf(".") + 1).toLowerCase();
+    String extensionName = multipartFile.getOriginalFilename();
+    String ext = extensionName.substring(extensionName.lastIndexOf(".") + 1).toLowerCase();
     if(!ALLOWED_EXTENSIONS.contains(ext)) {
       throw new IllegalArgumentException("허용되지 않는 파일 형식입니다." + ext);
     }

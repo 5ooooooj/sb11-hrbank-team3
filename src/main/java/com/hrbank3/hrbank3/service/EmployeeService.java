@@ -4,10 +4,10 @@ import com.hrbank3.hrbank3.dto.employee.EmployeeCreateRequest;
 import com.hrbank3.hrbank3.dto.employee.EmployeeDto;
 import com.hrbank3.hrbank3.entity.Employee;
 import com.hrbank3.hrbank3.repository.EmployeeRepository;
-import jakarta.transaction.Transactional;
+import java.util.NoSuchElementException;
 import lombok.RequiredArgsConstructor;
-import org.apache.coyote.BadRequestException;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
@@ -36,6 +36,13 @@ public class EmployeeService {
     return toDto(savedEmployee);
   }
 
+  @Transactional(readOnly = true)
+  public EmployeeDto findById(Long id) {
+    Employee employee = employeeRepository.findById(id)
+        .orElseThrow(() -> new NoSuchElementException("직원을 찾을 수  없습니다."));
+    return toDto(employee);
+  }
+
   private EmployeeDto toDto(Employee employee) {
     return new EmployeeDto(
         employee.getId(),
@@ -50,4 +57,6 @@ public class EmployeeService {
         employee.getProfileImageId()
     );
   }
+
+
 }

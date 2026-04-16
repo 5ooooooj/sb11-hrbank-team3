@@ -4,7 +4,7 @@ import com.hrbank3.hrbank3.entity.EmployeeStatus;
 import java.time.LocalDate;
 
 public record EmployeeDto(
-    Long Id,
+    Long id,
     String name,
     String email,
     String employeeNumber,

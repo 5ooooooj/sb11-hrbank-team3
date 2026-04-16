@@ -51,9 +51,7 @@ public class BasicBackupHistoryService implements BackupHistoryService {
 
     Instant lastBackupTime = lastCompleted.get().getEndedAt();
     // 마지막 백업 완료된 시간 이후 직원 데이터가 변경됐는지 확인하는 메소드
-    // TODO : employeeRepository 구현체 들어오면 해당 메소드 추가해야됨
- //   return employeeRepository.existsByUpdatedAtAfter(lastBackupTime);
-    return false; // TODO : 오류가 나지 않게 임의로 설정, 추후 삭제
+    return employeeRepository.existsByUpdatedAtAfter(lastBackupTime);
   }
 
   // TODO : 이후 메서드 구현

@@ -3,6 +3,9 @@ spring:
     name: hrbank3
   profiles:
     active: local
+  mvc:
+    format:
+      date-time: iso # 프론트 파싱을 위한 설정 -> 테스트 필요
   servlet:
     multipart:
       enabled: true

@@ -67,6 +67,13 @@ public class EmployeeService {
     return toDto(employee);
   }
 
+  @Transactional
+  public void delete(Long id) {
+    Employee employee = employeeRepository.findById(id)
+        .orElseThrow(() -> new NoSuchElementException("직원을 찾을 수 없습니다."));
+    employeeRepository.delete(employee);
+  }
+
   private EmployeeDto toDto(Employee employee) {
     return new EmployeeDto(
         employee.getId(),

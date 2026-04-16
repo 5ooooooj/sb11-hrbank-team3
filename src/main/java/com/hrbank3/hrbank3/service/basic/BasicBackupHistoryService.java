@@ -1,7 +1,7 @@
 package com.hrbank3.hrbank3.service.basic;
 
 import com.hrbank3.hrbank3.dto.backupHistory.BackupHistoryDto;
-import com.hrbank3.hrbank3.employee.repository.EmployeeRepository;
+import com.hrbank3.hrbank3.repository.EmployeeRepository;
 import com.hrbank3.hrbank3.entity.BackupHistory;
 import com.hrbank3.hrbank3.entity.BackupStatus;
 import com.hrbank3.hrbank3.mapper.BackupHistoryMapper;

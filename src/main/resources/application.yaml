@@ -3,9 +3,21 @@ spring:
     name: hrbank3
   profiles:
     active: local
+  mvc:
+    format:
+      date-time: iso # 프론트 파싱을 위한 설정 -> 테스트 필요
+  servlet:
+    multipart:
+      enabled: true
+      max-file-size: 10MB
+      max-request-size: 50MB
 
 springdoc:
   swagger-ui:
     path: /swagger-ui.html
   api-docs:
     path: /api-docs
+
+file:
+  upload:
+    path: ${FILE_UPLOAD_PATH:./uploads/}

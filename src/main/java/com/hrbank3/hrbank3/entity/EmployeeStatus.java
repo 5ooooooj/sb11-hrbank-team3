@@ -1,4 +1,4 @@
-package com.hrbank3.hrbank3.employee.entity;
+package com.hrbank3.hrbank3.entity;
 
 public enum EmployeeStatus {
   ACTIVE,   // 재직중

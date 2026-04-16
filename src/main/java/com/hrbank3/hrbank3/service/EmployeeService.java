@@ -2,6 +2,7 @@ package com.hrbank3.hrbank3.service;
 
 import com.hrbank3.hrbank3.dto.employee.EmployeeCreateRequest;
 import com.hrbank3.hrbank3.dto.employee.EmployeeDto;
+import com.hrbank3.hrbank3.dto.employee.EmployeeUpdateRequest;
 import com.hrbank3.hrbank3.entity.Employee;
 import com.hrbank3.hrbank3.repository.EmployeeRepository;
 import java.util.NoSuchElementException;
@@ -40,6 +41,29 @@ public class EmployeeService {
   public EmployeeDto findById(Long id) {
     Employee employee = employeeRepository.findById(id)
         .orElseThrow(() -> new NoSuchElementException("직원을 찾을 수  없습니다."));
+    return toDto(employee);
+  }
+
+  @Transactional
+  public EmployeeDto update(Long id, EmployeeUpdateRequest request) {
+    Employee employee = employeeRepository.findById(id)
+        .orElseThrow(() -> new NoSuchElementException("직원을 찾을 수 없습니다."));
+
+    if (!employee.getName().equals(request.email()) &&
+        employeeRepository.existsByEmail(request.email())) {
+      throw new IllegalArgumentException("이미 사용중인 이메일입니다.");
+    }
+
+    employee.update(
+        request.name(),
+        request.email(),
+        request.departmentId(),
+        request.position(),
+        request.hireDate(),
+        request.status(),
+        null // 파일업로드 서비스 로직 머지후에 연동
+    );
+
     return toDto(employee);
   }
 

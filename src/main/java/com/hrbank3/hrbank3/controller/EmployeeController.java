@@ -2,12 +2,14 @@ package com.hrbank3.hrbank3.controller;
 
 import com.hrbank3.hrbank3.dto.employee.EmployeeCreateRequest;
 import com.hrbank3.hrbank3.dto.employee.EmployeeDto;
+import com.hrbank3.hrbank3.dto.employee.EmployeeUpdateRequest;
 import com.hrbank3.hrbank3.service.EmployeeService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -36,6 +38,17 @@ public class EmployeeController {
   @GetMapping
   public ResponseEntity<EmployeeDto> findById(@PathVariable Long id) {
     EmployeeDto response = employeeService.findById(id);
+    return ResponseEntity.ok(response);
+  }
+
+  @PatchMapping(value = "/{id}", consumes = "multipart/form-data")
+  public ResponseEntity<EmployeeDto> update(
+      @PathVariable Long id,
+      @RequestPart("employee")
+      @Valid EmployeeUpdateRequest request,
+      @RequestPart(value = "profile", required = false) MultipartFile profile
+  ) {
+    EmployeeDto response = employeeService.update(id, request);
     return ResponseEntity.ok(response);
   }
 }

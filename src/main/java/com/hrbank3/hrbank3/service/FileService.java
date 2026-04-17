@@ -6,6 +6,7 @@ import com.hrbank3.hrbank3.repository.FileMetadataRepository;
 import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
@@ -35,7 +36,7 @@ public class FileService {
   private String uploadPath;
 
   @Transactional
-  public Long uploadFile(MultipartFile multipartFile) {
+  public FileMetadata uploadFile(MultipartFile multipartFile) {
     // 파일 존재 여부 검증
     if(multipartFile == null || multipartFile.isEmpty()) {
       throw new IllegalArgumentException("업로드된 파일이 없습니다.");
@@ -92,7 +93,7 @@ public class FileService {
     }
 
     // 응답 ID 반환
-    return savedFile.getId();
+    return savedFile;
   }
 
   @Transactional(readOnly = true)
@@ -119,6 +120,19 @@ public class FileService {
       );
     } catch (MalformedURLException e) {
       throw new RuntimeException("파일 경로를 읽는 도중 시스템 오류가 발생했습니다.", e);
+    }
+  }
+
+  public void deletePhysicalFile(String storagePath) {
+    if(storagePath == null || storagePath.isEmpty()) {
+      return;
+    }
+
+    try {
+      Path filePath = Paths.get(storagePath);
+      Files.deleteIfExists(filePath);
+    } catch (IOException e) {
+      throw new RuntimeException("물리파일 삭제 중 에러가 발생했습니다." + storagePath, e);
     }
   }
 }

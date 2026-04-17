@@ -36,12 +36,12 @@ public class EmployeeController {
       @Valid EmployeeCreateRequest request,
       @RequestPart(value = "profile", required = false) MultipartFile profile
   ) {
-    EmployeeDto response = employeeService.create(request);
+    EmployeeDto response = employeeService.create(request, profile);
     return ResponseEntity.status(HttpStatus.CREATED).body(response);
   }
 
   @Operation(summary = "직원 상세 조회")
-  @GetMapping
+  @GetMapping(value = "/{id}")
   public ResponseEntity<EmployeeDto> findById(@PathVariable Long id) {
     EmployeeDto response = employeeService.findById(id);
     return ResponseEntity.ok(response);
@@ -55,7 +55,7 @@ public class EmployeeController {
       @Valid EmployeeUpdateRequest request,
       @RequestPart(value = "profile", required = false) MultipartFile profile
   ) {
-    EmployeeDto response = employeeService.update(id, request);
+    EmployeeDto response = employeeService.update(id, request, profile);
     return ResponseEntity.ok(response);
   }
 

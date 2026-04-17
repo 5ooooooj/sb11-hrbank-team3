@@ -1,4 +1,4 @@
-package com.hrbank.hrbank.dto;
+package com.hrbank3.hrbank3.dto;
 
 import java.util.List;
 

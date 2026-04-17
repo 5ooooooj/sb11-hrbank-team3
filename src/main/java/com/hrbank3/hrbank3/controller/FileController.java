@@ -10,6 +10,7 @@ import org.springframework.core.io.Resource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -25,7 +26,7 @@ public class FileController {
 
   @Operation(summary = "파일 다운로드")
   @GetMapping("/{id}/download")
-  public ResponseEntity<Resource> downloadFile(@RequestParam("id") Long id) {
+  public ResponseEntity<Resource> downloadFile(@PathVariable("id") Long id) {
     // Service를 호출하여 파일 리소스 및 메타데이터를 받아옴
     FileDownloadDto downloadDto = fileService.downloadFile(id);
 

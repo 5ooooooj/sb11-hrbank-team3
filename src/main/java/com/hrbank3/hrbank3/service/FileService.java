@@ -28,7 +28,7 @@ public class FileService {
   // 허용할 확장자 리스트
   private final List<String> ALLOWED_EXTENSIONS = Arrays.asList("jpg", "jpeg", "png", "pdf");
   // 최대 용량 제한 (10MB)
-  private final long MAX_FILE_SIZE = 10 * 1024 * 1024;
+  private static final long MAX_FILE_SIZE = 10 * 1024 * 1024;
 
   // 환경변수 처리를 해뒀던 yaml의 값을 가져옴
   @Value("${file.upload.path}")

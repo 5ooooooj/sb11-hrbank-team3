@@ -1,6 +1,6 @@
 package com.hrbank3.hrbank3.repository.custom;
 
-import com.hrbank3.hrbank3.entity.BackupStatus;
+import com.hrbank3.hrbank3.entity.enums.BackupStatus;
 import com.hrbank3.hrbank3.entity.QBackupHistory;
 import com.hrbank3.hrbank3.repository.condition.BackupHistorySortType;
 import com.querydsl.core.types.OrderSpecifier;

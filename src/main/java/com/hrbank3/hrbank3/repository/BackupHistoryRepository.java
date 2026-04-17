@@ -1,7 +1,7 @@
 package com.hrbank3.hrbank3.repository;
 
 import com.hrbank3.hrbank3.entity.BackupHistory;
-import com.hrbank3.hrbank3.entity.BackupStatus;
+import com.hrbank3.hrbank3.entity.enums.BackupStatus;
 import com.hrbank3.hrbank3.repository.custom.BackupHistoryRepositoryCustom;
 import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;

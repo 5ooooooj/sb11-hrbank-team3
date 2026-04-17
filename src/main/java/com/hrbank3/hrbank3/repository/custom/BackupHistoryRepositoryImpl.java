@@ -21,9 +21,6 @@ public class BackupHistoryRepositoryImpl implements BackupHistoryRepositoryCusto
   private final JPAQueryFactory queryFactory;
   private final QBackupHistory backupHistory = QBackupHistory.backupHistory;
 
-  // 프로로타입 기준으로 페이지 사이즈 10으로 상수 고정
-  private static final int PAGE_SIZE = 10;
-
   @Override
   public List<BackupHistory> findAllByCondition(BackupHistorySearchCondition condition) {
     return queryFactory
@@ -36,7 +33,7 @@ public class BackupHistoryRepositoryImpl implements BackupHistoryRepositoryCusto
             cursorCondition(condition.getLastId(), condition.getSortType())
         )
         .orderBy(resolveOrderBy(condition.getSortType()))
-        .limit(PAGE_SIZE)
+        .limit(condition.getPageSize()) // 서비스에서 PAGE_SIZE + 1 로 넘어옴
         .fetch();
 
   }

@@ -29,11 +29,11 @@ public class BackupHistoryController {
       @ApiResponse(responseCode = "500", description = "서버 오류")
   })
   @PostMapping
-  public ResponseEntity<BackupHistoryDto> create(HttpServletRequest request) {
+  public ResponseEntity<BackupHistoryDto> backup(HttpServletRequest request) {
     String worker = request.getHeader("X-Forwarded-For"); // 헤더값으로 실제 클라이언트 ip 받기
     if (worker == null || worker.isBlank()) {
       worker = request.getRemoteAddr(); // 헤더 없으면 직접 연결하여 ip 받음
     }
-    return ResponseEntity.ok(backupHistoryService.create(worker));
+    return ResponseEntity.ok(backupHistoryService.backup(worker));
   }
 }

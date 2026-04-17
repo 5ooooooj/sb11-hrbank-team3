@@ -26,7 +26,7 @@ public class FileService {
   private final FileMetadataRepository fileMetadataRepository;
 
   // 허용할 확장자 리스트
-  private final List<String> ALLOWED_EXTENSIONS = Arrays.asList("jpg", "jpeg", "png", "pdf");
+  private static final List<String> ALLOWED_EXTENSIONS = Arrays.asList("jpg", "jpeg", "png", "pdf");
   // 최대 용량 제한 (10MB)
   private static final long MAX_FILE_SIZE = 10 * 1024 * 1024;
 

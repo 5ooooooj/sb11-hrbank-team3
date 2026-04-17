@@ -7,6 +7,7 @@ import com.hrbank3.hrbank3.service.EmployeeService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -29,10 +30,10 @@ public class EmployeeController {
   private final EmployeeService employeeService;
 
   @Operation(summary = "직원 등록")
-  @PostMapping(consumes = "multipart/form-data")
+  @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
   //employee 객체와 profile 파일 같이 보내야하는데, 파일이 포함된 요청은 multipart/form-data 써야함
   public ResponseEntity<EmployeeDto> create(
-      @RequestPart("employee")
+      @RequestPart(value = "employee")
       @Valid EmployeeCreateRequest request,
       @RequestPart(value = "profile", required = false) MultipartFile profile
   ) {
@@ -48,7 +49,7 @@ public class EmployeeController {
   }
 
   @Operation(summary = "직원 수정")
-  @PatchMapping(value = "/{id}", consumes = "multipart/form-data")
+  @PatchMapping(value = "/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
   public ResponseEntity<EmployeeDto> update(
       @PathVariable Long id,
       @RequestPart("employee")

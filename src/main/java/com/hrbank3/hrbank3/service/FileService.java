@@ -87,7 +87,9 @@ public class FileService {
     File localDisc = new File(storagePath);
     try {
       // transferTo() -> 파일 저장 과정에서 발생할 수 있는 I/O관련 예외를 자동으로 처리
-      multipartFile.transferTo(localDisc);
+      // transferTo()에 상대 경로(./)를 그대로 넘기고 톰캣 임시 폴더(work/Tomcat/...)를 참조하여 FileNotFoundException 발생
+      // getAbsoluteFile()을 사용하여 로컬(상대 경로)과 운영(절대 경로) 환경 모두 안전하게 물리 파일을 저장함
+      multipartFile.transferTo(localDisc.getAbsoluteFile());
     } catch (IOException e) {
       throw new RuntimeException("파일 저장 중 시스템 오류가 발생했습니다.", e);
     }

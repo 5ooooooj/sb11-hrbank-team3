@@ -4,7 +4,7 @@ import com.hrbank3.hrbank3.dto.CursorPageResponseDto;
 import com.hrbank3.hrbank3.dto.employee.EmployeeCreateRequest;
 import com.hrbank3.hrbank3.dto.employee.EmployeeDto;
 import com.hrbank3.hrbank3.dto.employee.EmployeeUpdateRequest;
-import com.hrbank3.hrbank3.entity.EmployeeStatus;
+import com.hrbank3.hrbank3.entity.enums.EmployeeStatus;
 import com.hrbank3.hrbank3.repository.condition.EmployeeSearchCondition;
 import com.hrbank3.hrbank3.service.EmployeeService;
 import jakarta.validation.Valid;

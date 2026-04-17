@@ -1,6 +1,6 @@
 package com.hrbank3.hrbank3.repository.condition;
 
-import com.hrbank3.hrbank3.entity.EmployeeStatus;
+import com.hrbank3.hrbank3.entity.enums.EmployeeStatus;
 import java.time.LocalDate;
 
 public record EmployeeSearchCondition(

@@ -1,7 +1,7 @@
 package com.hrbank3.hrbank3.repository.custom;
 
 import com.hrbank3.hrbank3.entity.Employee;
-import com.hrbank3.hrbank3.entity.EmployeeStatus;
+import com.hrbank3.hrbank3.entity.enums.EmployeeStatus;
 import com.hrbank3.hrbank3.entity.QEmployee;
 import com.hrbank3.hrbank3.repository.condition.EmployeeSearchCondition;
 import com.querydsl.core.types.OrderSpecifier;

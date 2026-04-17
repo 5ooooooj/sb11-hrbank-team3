@@ -1,5 +1,6 @@
 package com.hrbank3.hrbank3.entity;
 
+import com.hrbank3.hrbank3.entity.enums.EmployeeStatus;
 import jakarta.persistence.*;
 import java.time.Instant;
 import java.time.LocalDate;

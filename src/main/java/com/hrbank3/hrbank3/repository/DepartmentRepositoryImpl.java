@@ -1,9 +1,9 @@
-package com.hrbank.hrbank.repository;
+package com.hrbank3.hrbank3.repository;
 
-import com.hrbank.hrbank.dto.CursorPageResponseDto;
-import com.hrbank.hrbank.dto.DepartmentDto;
-import com.hrbank.hrbank.entity.Department;
-import com.hrbank.hrbank.entity.QDepartment;
+import com.hrbank3.hrbank3.dto.CursorPageResponseDto;
+import com.hrbank3.hrbank3.dto.department.DepartmentDto;
+import com.hrbank3.hrbank3.entity.Department;
+import com.hrbank3.hrbank3.entity.QDepartment;
 import com.querydsl.core.BooleanBuilder;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;

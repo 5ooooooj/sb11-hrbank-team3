@@ -2,7 +2,8 @@ package com.hrbank.hrbank.controller;
 
 import com.hrbank.hrbank.dto.CursorPageResponseDto;
 import com.hrbank.hrbank.dto.DepartmentDto;
-import com.hrbank.hrbank.dto.DepartmentRequest;
+import com.hrbank.hrbank.dto.DepartmentCreateRequest;
+import com.hrbank.hrbank.dto.DepartmentUpdateRequest;
 import com.hrbank.hrbank.service.DepartmentService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -19,7 +20,7 @@ public class DepartmentController {
 
     // 부서 등록
     @PostMapping
-    public ResponseEntity<DepartmentDto> create(@Valid @RequestBody DepartmentRequest request) {
+    public ResponseEntity<DepartmentDto> create(@Valid @RequestBody DepartmentCreateRequest request) {
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(departmentService.create(request));
     }
@@ -28,7 +29,7 @@ public class DepartmentController {
     @PatchMapping("/{id}")
     public ResponseEntity<DepartmentDto> update(
             @PathVariable Long id,
-            @Valid @RequestBody DepartmentRequest request) {
+            @Valid @RequestBody DepartmentUpdateRequest request) {
         return ResponseEntity.ok(departmentService.update(id, request));
     }
 
@@ -42,15 +43,14 @@ public class DepartmentController {
     // 부서 목록 조회
     @GetMapping
     public ResponseEntity<CursorPageResponseDto<DepartmentDto>> findAll(
-            @RequestParam(required = false) String nameKeyword,
-            @RequestParam(required = false) String descriptionKeyword,
+            @RequestParam(required = false) String nameOrDescription, // 변경
             @RequestParam(defaultValue = "name") String sortBy,
             @RequestParam(defaultValue = "asc") String sortDirection,
             @RequestParam(required = false) Long lastId,
             @RequestParam(defaultValue = "10") int size) {
         return ResponseEntity.ok(
                 departmentService.findAll(
-                        nameKeyword, descriptionKeyword,
+                        nameOrDescription, // 변경
                         sortBy, sortDirection, lastId, size));
     }
     // 부서 단건 조회

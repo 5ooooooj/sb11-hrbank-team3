@@ -1,9 +1,9 @@
-package com.hrbank.hrbank.domain.department.controller;
+package com.hrbank.hrbank.controller;
 
-import com.hrbank.hrbank.domain.department.dto.CursorPageResponseDto;
-import com.hrbank.hrbank.domain.department.dto.DepartmentDto;
-import com.hrbank.hrbank.domain.department.dto.DepartmentRequest;
-import com.hrbank.hrbank.domain.department.service.DepartmentService;
+import com.hrbank.hrbank.dto.CursorPageResponseDto;
+import com.hrbank.hrbank.dto.DepartmentDto;
+import com.hrbank.hrbank.dto.DepartmentRequest;
+import com.hrbank.hrbank.service.DepartmentService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;

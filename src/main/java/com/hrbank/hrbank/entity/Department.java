@@ -1,4 +1,4 @@
-package com.hrbank.hrbank.domain.department.entity;
+package com.hrbank.hrbank.entity;
 
 import jakarta.persistence.*;
 import lombok.Getter;

@@ -1,4 +1,4 @@
-package com.hrbank.hrbank.domain.department.dto;
+package com.hrbank.hrbank.dto;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;

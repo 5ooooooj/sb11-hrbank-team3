@@ -1,6 +1,6 @@
 package com.hrbank3.hrbank3.repository.condition;
 
-import com.hrbank3.hrbank3.entity.BackupStatus;
+import com.hrbank3.hrbank3.entity.enums.BackupStatus;
 import java.time.ZonedDateTime;
 import lombok.Getter;
 import lombok.NoArgsConstructor;

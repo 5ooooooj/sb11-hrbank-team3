@@ -1,5 +1,6 @@
 package com.hrbank3.hrbank3.entity;
 
+import com.hrbank3.hrbank3.entity.enums.BackupStatus;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;

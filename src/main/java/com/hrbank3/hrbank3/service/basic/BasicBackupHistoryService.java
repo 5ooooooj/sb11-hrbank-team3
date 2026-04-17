@@ -25,11 +25,21 @@ public class BasicBackupHistoryService implements BackupHistoryService {
   // create
   @Transactional
   public BackupHistoryDto create(String worker) {
-    // 백업 필요 여부 판단
-    boolean backupNeeded = isBackupNeeded();
+
+    // IN_PROGRESS 중복 체크
+    boolean isInProgress = backupHistoryRepository.existsByStatus(BackupStatus.IN_PROGRESS);
+
+    if (isInProgress) {
+      throw new IllegalStateException("이미 진행 중인 백업이 있습니다.");
+    }
+
+    // worker null 체크
+    if (worker == null || worker.isBlank()) {
+      throw new IllegalArgumentException("작업자 정보가 없습니다.");
+    }
 
     // 백업 필요 없으면 skipped 상태로 저장 후 종료
-    BackupHistory history = backupNeeded
+    BackupHistory history = isBackupNeeded()
         ? BackupHistory.ofInProgress(worker)
         : BackupHistory.ofSkipped(worker);
 

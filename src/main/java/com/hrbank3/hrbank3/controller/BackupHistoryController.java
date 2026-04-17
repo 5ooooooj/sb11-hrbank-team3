@@ -30,8 +30,10 @@ public class BackupHistoryController {
   })
   @PostMapping
   public ResponseEntity<BackupHistoryDto> create(HttpServletRequest request) {
-    String worker = request.getRemoteAddr(); // IP 주소
+    String worker = request.getHeader("X-Forwarded-For"); // 헤더값으로 실제 클라이언트 ip 받기
+    if (worker == null || worker.isBlank()) {
+      worker = request.getRemoteAddr(); // 헤더 없으면 직접 연결하여 ip 받음
+    }
     return ResponseEntity.ok(backupHistoryService.create(worker));
   }
-
 }

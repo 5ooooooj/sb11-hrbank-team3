@@ -1,4 +1,4 @@
-package com.hrbank.hrbank.entity;
+package com.hrbank3.hrbank3.entity;
 
 import jakarta.persistence.*;
 import lombok.Getter;

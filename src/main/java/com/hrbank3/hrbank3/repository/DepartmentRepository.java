@@ -1,6 +1,6 @@
-package com.hrbank.hrbank.repository;
+package com.hrbank3.hrbank3.repository;
 
-import com.hrbank.hrbank.entity.Department;
+import com.hrbank3.hrbank3.entity.Department;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

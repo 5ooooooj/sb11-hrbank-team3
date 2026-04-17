@@ -68,7 +68,7 @@ public class EmployeeService {
     Employee employee = employeeRepository.findById(id)
         .orElseThrow(() -> new NoSuchElementException("직원을 찾을 수 없습니다."));
 
-    if (!employee.getName().equals(request.email()) &&
+    if (!employee.getEmail().equals(request.email()) &&
         employeeRepository.existsByEmail(request.email())) {
       throw new IllegalArgumentException("이미 사용중인 이메일입니다.");
     }

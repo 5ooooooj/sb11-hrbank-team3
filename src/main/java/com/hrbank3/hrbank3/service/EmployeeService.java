@@ -34,18 +34,26 @@ public class EmployeeService {
       savedProfileImage = fileService.uploadFile(profileImage);
     }
 
-    Employee employee = Employee.create(
-        request.name(),
-        request.email(),
-        request.departmentId(),
-        request.position(),
-        request.hireDate(),
-        savedProfileImage
-    );
+    try {
+      Employee employee = Employee.create(
+          request.name(),
+          request.email(),
+          request.departmentId(),
+          request.position(),
+          request.hireDate(),
+          savedProfileImage
+      );
 
-    Employee savedEmployee = employeeRepository.save(employee);
+      Employee savedEmployee = employeeRepository.save(employee);
 
-    return toDto(savedEmployee);
+      return toDto(savedEmployee);
+    } catch (Exception e) {
+      if(savedProfileImage != null) {
+        fileService.deletePhysicalFile(savedProfileImage.getStoragePath());
+      }
+      throw new RuntimeException("직원 등록 중 오류가 발생하여 업로드된 파일을 삭제하고 작업을 취소합니다", e);
+    }
+
   }
 
   @Transactional(readOnly = true)

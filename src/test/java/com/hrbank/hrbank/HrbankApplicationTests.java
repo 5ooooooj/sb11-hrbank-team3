@@ -1,4 +1,4 @@
-package com.hrbank.hrbank;
+;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;

@@ -17,5 +17,5 @@ public class BackupHistorySearchCondition {
   private BackupStatus status;
   private BackupHistorySortType sortType; // 정렬 조건
   private Long lastId; // 이전 페이지 마지막 요소 ID
-
+  private int pageSize;
 }

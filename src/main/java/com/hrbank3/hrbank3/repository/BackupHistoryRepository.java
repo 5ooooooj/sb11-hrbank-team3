@@ -13,4 +13,7 @@ public interface BackupHistoryRepository extends JpaRepository<BackupHistory, Lo
   // 백업 필요 여부를 판단하기 위한 메소드
   // 가장 최근 완료된 배치 작업 시간 이후 직원 데이터가 변경되었는지 조회
   Optional<BackupHistory> findTopByStatusOrderByStartedAtDesc(BackupStatus status);
+
+  // 현재 진행중인 백업이 있나 확인
+  boolean existsByStatus(BackupStatus status);
 }

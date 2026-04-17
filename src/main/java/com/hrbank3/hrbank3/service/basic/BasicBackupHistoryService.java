@@ -29,15 +29,12 @@ public class BasicBackupHistoryService implements BackupHistoryService {
     boolean backupNeeded = isBackupNeeded();
 
     // 백업 필요 없으면 skipped 상태로 저장 후 종료
-    if (!backupNeeded) {
-      BackupHistory skipped = BackupHistory.ofSkipped(worker);
-      backupHistoryRepository.save(skipped);
-      return backupHistoryMapper.toDto(skipped);
-    } else { //필요하면 IN_PROGRESS 상태로 등록
-      BackupHistory history = BackupHistory.ofInProgress(worker);
-      backupHistoryRepository.save(history);
-      return backupHistoryMapper.toDto(history);
-    }
+    BackupHistory history = backupNeeded
+        ? BackupHistory.ofInProgress(worker)
+        : BackupHistory.ofSkipped(worker);
+
+    BackupHistory savedHistory = backupHistoryRepository.save(history);
+    return backupHistoryMapper.toDto(savedHistory);
   }
 
   // 백업 필요한지 판단 로직

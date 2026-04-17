@@ -41,23 +41,49 @@ public class DashboardService {
         );
     }
 
-    // 최근 1년 월별 직원수 변동 추이
+    // 직원 수 추이 조회 (from, to, unit 파라미터)
     @Transactional(readOnly = true)
-    public List<EmployeeTrendDto> getEmployeeTrend() {
+    public List<EmployeeTrendDto> getEmployeeTrend(LocalDate from, LocalDate to, String unit) {
+        // 기본값 설정
+        if (unit == null || unit.isBlank()) {
+            unit = "month";
+        }
+        if (to == null) {
+            to = LocalDate.now();
+        }
+        if (from == null) {
+            from = getDefaultFrom(to, unit);
+        }
+
         List<EmployeeTrendDto> trend = new ArrayList<>();
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM");
-        LocalDate now = LocalDate.now();
+        LocalDate cursor = from;
 
-        for (int i = 11; i >= 0; i--) {
-            // 해당 월의 마지막 날 기준으로 직원 수 계산
-            LocalDate targetMonth = now.minusMonths(i);
-            LocalDate lastDayOfMonth = targetMonth.withDayOfMonth(targetMonth.lengthOfMonth());
+        while (!cursor.isAfter(to)) {
+            LocalDate periodEnd = getPeriodEnd(cursor, unit, to);
 
-            // 해당 월 말일 기준으로 입사한 재직/휴직 직원 수
+            // 해당 기간 말일 기준 재직/휴직 직원 수
             long count = employeeRepository.countByHireDateLessThanEqualAndStatusNot(
-                    lastDayOfMonth, EmployeeStatus.RESIGNED);
+                    periodEnd, EmployeeStatus.RESIGNED);
 
-            trend.add(new EmployeeTrendDto(targetMonth.format(formatter), count));
+            // 이전 기간 직원 수
+            LocalDate prevPeriodEnd = getPeriodEnd(getPrevPeriodStart(cursor, unit), unit,
+                    cursor.minusDays(1));
+            long prevCount = employeeRepository.countByHireDateLessThanEqualAndStatusNot(
+                    prevPeriodEnd, EmployeeStatus.RESIGNED);
+
+            // 증감 수, 증감률 계산
+            long change = count - prevCount;
+            double changeRate = prevCount == 0 ? 0.0
+                    : Math.round((double) change / prevCount * 1000) / 10.0;
+
+            trend.add(new EmployeeTrendDto(
+                    cursor.format(getFormatter(unit)),
+                    count,
+                    change,
+                    changeRate
+            ));
+
+            cursor = getNextPeriodStart(cursor, unit);
         }
         return trend;
     }
@@ -98,5 +124,60 @@ public class DashboardService {
                 .findTopByStatusOrderByStartedAtDesc(BackupStatus.COMPLETED)
                 .map(backup -> backup.getEndedAt())
                 .orElse(null);
+    }
+
+    // unit 기준 기본 시작일 계산
+    private LocalDate getDefaultFrom(LocalDate to, String unit) {
+        return switch (unit) {
+            case "day" -> to.minusDays(11);
+            case "week" -> to.minusWeeks(11);
+            case "quarter" -> to.minusMonths(33);
+            case "year" -> to.minusYears(11);
+            default -> to.minusMonths(11); // month
+        };
+    }
+
+    // 해당 기간의 마지막 날 계산
+    private LocalDate getPeriodEnd(LocalDate start, String unit, LocalDate max) {
+        LocalDate end = switch (unit) {
+            case "day" -> start;
+            case "week" -> start.plusWeeks(1).minusDays(1);
+            case "quarter" -> start.plusMonths(3).minusDays(1);
+            case "year" -> start.plusYears(1).minusDays(1);
+            default -> start.withDayOfMonth(start.lengthOfMonth()); // month
+        };
+        return end.isAfter(max) ? max : end;
+    }
+
+    // 다음 기간 시작일 계산
+    private LocalDate getNextPeriodStart(LocalDate current, String unit) {
+        return switch (unit) {
+            case "day" -> current.plusDays(1);
+            case "week" -> current.plusWeeks(1);
+            case "quarter" -> current.plusMonths(3);
+            case "year" -> current.plusYears(1);
+            default -> current.plusMonths(1); // month
+        };
+    }
+
+    // 이전 기간 시작일 계산
+    private LocalDate getPrevPeriodStart(LocalDate current, String unit) {
+        return switch (unit) {
+            case "day" -> current.minusDays(1);
+            case "week" -> current.minusWeeks(1);
+            case "quarter" -> current.minusMonths(3);
+            case "year" -> current.minusYears(1);
+            default -> current.minusMonths(1); // month
+        };
+    }
+
+    // unit별 날짜 포맷
+    private DateTimeFormatter getFormatter(String unit) {
+        return switch (unit) {
+            case "day", "week" -> DateTimeFormatter.ofPattern("yyyy-MM-dd");
+            case "year" -> DateTimeFormatter.ofPattern("yyyy");
+            case "quarter" -> DateTimeFormatter.ofPattern("yyyy-MM");
+            default -> DateTimeFormatter.ofPattern("yyyy-MM"); // month
+        };
     }
 }

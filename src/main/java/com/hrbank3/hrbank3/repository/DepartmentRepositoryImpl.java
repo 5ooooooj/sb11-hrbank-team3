@@ -29,7 +29,7 @@ public class DepartmentRepositoryImpl implements DepartmentRepositoryCustom {
         QDepartment department = QDepartment.department;
         BooleanBuilder builder = new BooleanBuilder();
 
-        // 키워드 필터링 (DB에서 바로 처리)
+        // 키워드 필터링
         if (nameOrDescription != null && !nameOrDescription.isBlank()) {
             builder.and(
                     department.name.containsIgnoreCase(nameOrDescription)
@@ -80,12 +80,14 @@ public class DepartmentRepositoryImpl implements DepartmentRepositoryCustom {
                 ))
                 .collect(Collectors.toList());
 
-        Long nextCursor = hasNext ? results.get(results.size() - 1).getId() : null;
+        // nextCursor는 String, nextIdAfter는 Long
+        String nextCursor = hasNext ? String.valueOf(results.get(results.size() - 1).getId()) : null;
+        Long nextIdAfter = hasNext ? results.get(results.size() - 1).getId() : null;
 
         return new CursorPageResponseDto<>(
                 content,
                 nextCursor,
-                nextCursor,
+                nextIdAfter,
                 content.size(),
                 totalElements,
                 hasNext

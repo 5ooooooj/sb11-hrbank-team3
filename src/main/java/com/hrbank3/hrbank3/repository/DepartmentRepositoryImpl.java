@@ -1,7 +1,7 @@
 package com.hrbank3.hrbank3.repository;
 
 import com.hrbank3.hrbank3.dto.CursorPageResponseDto;
-import com.hrbank3.hrbank3.dto.DepartmentDto;
+import com.hrbank3.hrbank3.dto.department.DepartmentDto;
 import com.hrbank3.hrbank3.entity.Department;
 import com.hrbank3.hrbank3.entity.QDepartment;
 import com.querydsl.core.BooleanBuilder;

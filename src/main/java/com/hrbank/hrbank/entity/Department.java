@@ -4,6 +4,10 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.LastModifiedDate;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
+
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
@@ -12,6 +16,7 @@ import java.time.LocalDateTime;
 @Getter
 @Setter
 @NoArgsConstructor
+@EntityListeners(AuditingEntityListener.class)
 public class Department {
 
     @Id
@@ -27,20 +32,13 @@ public class Department {
     @Column(nullable = false)
     private LocalDate establishedDate; // 날짜만 (시간 없음)
 
+    @CreatedDate
     @Column(nullable = false, updatable = false) // 한번 저장 후 수정 불가
     private LocalDateTime createdAt;
 
+    @LastModifiedDate
     @Column(nullable = false)
     private LocalDateTime updatedAt;
 
-    @PrePersist // 최초 저장 시 자동 실행
-    protected void onCreate() {
-        this.createdAt = LocalDateTime.now();
-        this.updatedAt = LocalDateTime.now();
-    }
 
-    @PreUpdate // 수정 시 자동 실행
-    protected void onUpdate() {
-        this.updatedAt = LocalDateTime.now();
-    }
 }

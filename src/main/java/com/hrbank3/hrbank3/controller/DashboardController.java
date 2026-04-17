@@ -4,6 +4,7 @@ import com.hrbank3.hrbank3.dto.dashboard.DashboardSummaryDto;
 import com.hrbank3.hrbank3.dto.dashboard.DepartmentDistributionDto;
 import com.hrbank3.hrbank3.dto.dashboard.EmployeeTrendDto;
 import com.hrbank3.hrbank3.dto.dashboard.PositionDistributionDto;
+import com.hrbank3.hrbank3.entity.enums.TrendUnit;
 import com.hrbank3.hrbank3.service.DashboardService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -38,7 +39,7 @@ public class DashboardController {
     public ResponseEntity<List<EmployeeTrendDto>> getEmployeeTrend(
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate from,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate to,
-            @RequestParam(required = false, defaultValue = "month") String unit
+            @RequestParam(required = false, defaultValue = "month") TrendUnit unit
     ) {
         return ResponseEntity.ok(dashboardService.getEmployeeTrend(from, to, unit));
     }

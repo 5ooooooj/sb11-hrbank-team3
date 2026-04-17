@@ -6,6 +6,7 @@ import com.hrbank3.hrbank3.dto.dashboard.EmployeeTrendDto;
 import com.hrbank3.hrbank3.dto.dashboard.PositionDistributionDto;
 import com.hrbank3.hrbank3.entity.enums.BackupStatus;
 import com.hrbank3.hrbank3.entity.EmployeeStatus;
+import com.hrbank3.hrbank3.entity.enums.TrendUnit;
 import com.hrbank3.hrbank3.repository.BackupHistoryRepository;
 import com.hrbank3.hrbank3.repository.DepartmentRepository;
 import com.hrbank3.hrbank3.repository.EmployeeAuditHistoryRepository;
@@ -43,10 +44,10 @@ public class DashboardService {
 
     // 직원 수 추이 조회 (from, to, unit 파라미터)
     @Transactional(readOnly = true)
-    public List<EmployeeTrendDto> getEmployeeTrend(LocalDate from, LocalDate to, String unit) {
+    public List<EmployeeTrendDto> getEmployeeTrend(LocalDate from, LocalDate to, TrendUnit unit) {
         // 기본값 설정
-        if (unit == null || unit.isBlank()) {
-            unit = "month";
+        if (unit == null) {
+            unit = TrendUnit.month;
         }
         if (to == null) {
             to = LocalDate.now();
@@ -127,57 +128,56 @@ public class DashboardService {
     }
 
     // unit 기준 기본 시작일 계산
-    private LocalDate getDefaultFrom(LocalDate to, String unit) {
+    private LocalDate getDefaultFrom(LocalDate to, TrendUnit unit) {
         return switch (unit) {
-            case "day" -> to.minusDays(11);
-            case "week" -> to.minusWeeks(11);
-            case "quarter" -> to.minusMonths(33);
-            case "year" -> to.minusYears(11);
-            default -> to.minusMonths(11); // month
+            case day -> to.minusDays(11);
+            case week -> to.minusWeeks(11);
+            case quarter -> to.minusMonths(33);
+            case year -> to.minusYears(11);
+            default -> to.minusMonths(11);
         };
     }
 
     // 해당 기간의 마지막 날 계산
-    private LocalDate getPeriodEnd(LocalDate start, String unit, LocalDate max) {
+    private LocalDate getPeriodEnd(LocalDate start, TrendUnit unit, LocalDate max) {
         LocalDate end = switch (unit) {
-            case "day" -> start;
-            case "week" -> start.plusWeeks(1).minusDays(1);
-            case "quarter" -> start.plusMonths(3).minusDays(1);
-            case "year" -> start.plusYears(1).minusDays(1);
-            default -> start.withDayOfMonth(start.lengthOfMonth()); // month
+            case day -> start;
+            case week -> start.plusWeeks(1).minusDays(1);
+            case quarter -> start.plusMonths(3).minusDays(1);
+            case year -> start.plusYears(1).minusDays(1);
+            default -> start.withDayOfMonth(start.lengthOfMonth());
         };
         return end.isAfter(max) ? max : end;
     }
 
     // 다음 기간 시작일 계산
-    private LocalDate getNextPeriodStart(LocalDate current, String unit) {
+    private LocalDate getNextPeriodStart(LocalDate current, TrendUnit unit) {
         return switch (unit) {
-            case "day" -> current.plusDays(1);
-            case "week" -> current.plusWeeks(1);
-            case "quarter" -> current.plusMonths(3);
-            case "year" -> current.plusYears(1);
-            default -> current.plusMonths(1); // month
+            case day -> current.plusDays(1);
+            case week -> current.plusWeeks(1);
+            case quarter -> current.plusMonths(3);
+            case year -> current.plusYears(1);
+            default -> current.plusMonths(1);
         };
     }
 
     // 이전 기간 시작일 계산
-    private LocalDate getPrevPeriodStart(LocalDate current, String unit) {
+    private LocalDate getPrevPeriodStart(LocalDate current, TrendUnit unit) {
         return switch (unit) {
-            case "day" -> current.minusDays(1);
-            case "week" -> current.minusWeeks(1);
-            case "quarter" -> current.minusMonths(3);
-            case "year" -> current.minusYears(1);
-            default -> current.minusMonths(1); // month
+            case day -> current.minusDays(1);
+            case week -> current.minusWeeks(1);
+            case quarter -> current.minusMonths(3);
+            case year -> current.minusYears(1);
+            default -> current.minusMonths(1);
         };
     }
 
     // unit별 날짜 포맷
-    private DateTimeFormatter getFormatter(String unit) {
+    private DateTimeFormatter getFormatter(TrendUnit unit) {
         return switch (unit) {
-            case "day", "week" -> DateTimeFormatter.ofPattern("yyyy-MM-dd");
-            case "year" -> DateTimeFormatter.ofPattern("yyyy");
-            case "quarter" -> DateTimeFormatter.ofPattern("yyyy-MM");
-            default -> DateTimeFormatter.ofPattern("yyyy-MM"); // month
+            case day, week -> DateTimeFormatter.ofPattern("yyyy-MM-dd");
+            case year -> DateTimeFormatter.ofPattern("yyyy");
+            default -> DateTimeFormatter.ofPattern("yyyy-MM");
         };
     }
 }

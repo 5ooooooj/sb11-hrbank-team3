@@ -44,8 +44,9 @@ public class Employee {
   @Column(name = "hire_date", nullable = false)
   private LocalDate hireDate;
 
-  @Column(name = "profile_image_id")
-  private Long profileImageId;
+  @OneToOne(fetch = FetchType.LAZY, orphanRemoval = true, cascade = CascadeType.ALL)
+  @JoinColumn(name = "profile_image_id")
+  private FileMetadata profileImage;
 
   @CreatedDate
   @Column(name = "created_at", nullable = false, updatable = false)
@@ -75,25 +76,28 @@ public class Employee {
   }
 
   public static Employee create(String name, String email, Long departmentId,
-      String position, LocalDate hireDate, Long profileImageId) {
+      String position, LocalDate hireDate, FileMetadata profileImage) {
     Employee employee = new Employee();
     employee.name = name;
     employee.email = email;
     employee.departmentId = departmentId;
     employee.position = position;
     employee.hireDate = hireDate;
-    employee.profileImageId = profileImageId;
+    employee.profileImage = profileImage;
     return employee;
   }
 
   public void update(String name, String email, Long departmentId,
-      String position, LocalDate hireDate, EmployeeStatus status, Long profileImageId) {
+      String position, LocalDate hireDate, EmployeeStatus status) {
     this.name = name;
     this.email = email;
     this.departmentId = departmentId;
     this.position = position;
     this.hireDate = hireDate;
     this.status = status;
-    this.profileImageId = profileImageId;
+  }
+
+  public void updateProfileImage(FileMetadata newProfileImage) {
+    this.profileImage = newProfileImage;
   }
 }

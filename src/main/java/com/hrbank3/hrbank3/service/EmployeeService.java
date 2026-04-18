@@ -1,11 +1,14 @@
 package com.hrbank3.hrbank3.service;
 
+import com.hrbank3.hrbank3.dto.employee.CursorPageResponseDto;
 import com.hrbank3.hrbank3.dto.employee.EmployeeCreateRequest;
 import com.hrbank3.hrbank3.dto.employee.EmployeeDto;
 import com.hrbank3.hrbank3.dto.employee.EmployeeUpdateRequest;
 import com.hrbank3.hrbank3.entity.Employee;
 import com.hrbank3.hrbank3.entity.FileMetadata;
 import com.hrbank3.hrbank3.repository.EmployeeRepository;
+import com.hrbank3.hrbank3.repository.condition.EmployeeSearchCondition;
+import java.util.List;
 import java.util.NoSuchElementException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -30,7 +33,7 @@ public class EmployeeService {
     FileMetadata savedProfileImage = null;
 
     // 사진을 업로드한 경우에만 FileService를 호출하여 DB에 메타데이터를 생성
-    if(profileImage != null && !profileImage.isEmpty()) {
+    if (profileImage != null && !profileImage.isEmpty()) {
       savedProfileImage = fileService.uploadFile(profileImage);
     }
 
@@ -46,14 +49,45 @@ public class EmployeeService {
 
       Employee savedEmployee = employeeRepository.save(employee);
 
+      // TODO: EmployeeAuditHistory 머지 후 이력 저장 연동 필요
+      // AuditType.CREATED, targetEmployeeNo = savedEmployee.getEmployeeNumber()
+
       return toDto(savedEmployee);
     } catch (Exception e) {
-      if(savedProfileImage != null) {
+      if (savedProfileImage != null) {
         fileService.deletePhysicalFile(savedProfileImage.getStoragePath());
       }
       throw new RuntimeException("직원 등록 중 오류가 발생하여 업로드된 파일을 삭제하고 작업을 취소합니다", e);
     }
 
+  }
+
+  @Transactional(readOnly = true)
+  public CursorPageResponseDto<EmployeeDto> findAll(EmployeeSearchCondition condition) {
+    List<Employee> employees = employeeRepository.findAllByCondition(condition);
+
+    boolean hasNext = employees.size() > condition.size();
+    if (hasNext) {
+      employees = employees.subList(0, condition.size());
+    }
+
+    long totalElements = employeeRepository.countByCondition(condition);
+
+    Long nextIdAfter = hasNext ? employees.get(employees.size() - 1).getId() : null;
+    String nextCursor = nextIdAfter != null ? String.valueOf(nextIdAfter) : null;
+
+    List<EmployeeDto> content = employees.stream()
+        .map(this::toDto)
+        .toList();
+
+    return new CursorPageResponseDto<>(
+        content,
+        nextCursor,
+        nextIdAfter,
+        content.size(),
+        totalElements,
+        hasNext
+    );
   }
 
   @Transactional(readOnly = true)
@@ -83,10 +117,10 @@ public class EmployeeService {
     );
 
     // 프로필 이미지가 새로 업로드된 경우
-    if(newProfileImage != null && !newProfileImage.isEmpty()) {
+    if (newProfileImage != null && !newProfileImage.isEmpty()) {
       // 기존 이미지가 존재 할 경우, 디스크에서 실제 물리파일 먼저 삭제
       FileMetadata oldImage = employee.getProfileImage();
-      if(oldImage != null) {
+      if (oldImage != null) {
         fileService.deletePhysicalFile(oldImage.getStoragePath());
       }
       // 새로운 파일 로컬 저장 및 DB 메타데이터 생성
@@ -103,7 +137,7 @@ public class EmployeeService {
     Employee employee = employeeRepository.findById(id)
         .orElseThrow(() -> new NoSuchElementException("직원을 찾을 수 없습니다."));
 
-    if(employee.getProfileImage() != null) {
+    if (employee.getProfileImage() != null) {
       fileService.deletePhysicalFile(employee.getProfileImage().getStoragePath());
     }
 
@@ -121,7 +155,7 @@ public class EmployeeService {
         employee.getPosition(),
         employee.getHireDate(),
         employee.getStatus(),
-        employee.getProfileImage() != null ? employee.getProfileImage().getId(): null
+        employee.getProfileImage() != null ? employee.getProfileImage().getId() : null
     );
   }
 

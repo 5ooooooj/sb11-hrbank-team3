@@ -1,6 +1,6 @@
 package com.hrbank3.hrbank3.dto.employee;
 
-import com.hrbank3.hrbank3.entity.EmployeeStatus;
+import com.hrbank3.hrbank3.entity.enums.EmployeeStatus;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;

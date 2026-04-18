@@ -1,9 +1,9 @@
 package com.hrbank3.hrbank3.controller;
 
 import com.hrbank3.hrbank3.dto.CursorPageResponseDto;
-import com.hrbank3.hrbank3.dto.DepartmentDto;
-import com.hrbank3.hrbank3.dto.DepartmentCreateRequest;
-import com.hrbank3.hrbank3.dto.DepartmentUpdateRequest;
+import com.hrbank3.hrbank3.dto.department.DepartmentDto;
+import com.hrbank3.hrbank3.dto.department.DepartmentCreateRequest;
+import com.hrbank3.hrbank3.dto.department.DepartmentUpdateRequest;
 import com.hrbank3.hrbank3.service.DepartmentService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;

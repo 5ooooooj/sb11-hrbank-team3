@@ -1,4 +1,4 @@
-package com.hrbank3.hrbank3.dto;
+package com.hrbank3.hrbank3.dto.department;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;

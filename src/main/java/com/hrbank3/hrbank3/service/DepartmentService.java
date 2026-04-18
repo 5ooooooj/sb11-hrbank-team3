@@ -1,17 +1,14 @@
 package com.hrbank3.hrbank3.service;
 
 import com.hrbank3.hrbank3.dto.CursorPageResponseDto;
-import com.hrbank3.hrbank3.dto.DepartmentDto;
-import com.hrbank3.hrbank3.dto.DepartmentCreateRequest;
-import com.hrbank3.hrbank3.dto.DepartmentUpdateRequest;
+import com.hrbank3.hrbank3.dto.department.DepartmentDto;
+import com.hrbank3.hrbank3.dto.department.DepartmentCreateRequest;
+import com.hrbank3.hrbank3.dto.department.DepartmentUpdateRequest;
 import com.hrbank3.hrbank3.entity.Department;
 import com.hrbank3.hrbank3.repository.DepartmentRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor

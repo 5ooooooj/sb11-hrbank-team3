@@ -91,7 +91,7 @@ public class EmployeeRepositoryImpl implements EmployeeRepositoryCustom {
 
   // 명세서 hireDateFrom: string($date)
   private BooleanExpression hireDateBetween(LocalDate from, LocalDate to) {
-    if (from == null & to == null) {
+    if (from == null && to == null) {
       return null;
     }
     if (from == null) {

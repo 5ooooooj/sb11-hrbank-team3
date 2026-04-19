@@ -7,6 +7,8 @@ import com.hrbank3.hrbank3.dto.employee.EmployeeUpdateRequest;
 import com.hrbank3.hrbank3.entity.enums.EmployeeStatus;
 import com.hrbank3.hrbank3.repository.condition.EmployeeSearchCondition;
 import com.hrbank3.hrbank3.service.EmployeeService;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Content;
 import jakarta.validation.Valid;
 import java.time.LocalDate;
 import lombok.RequiredArgsConstructor;
@@ -39,6 +41,7 @@ public class EmployeeController {
   //employee 객체와 profile 파일 같이 보내야하는데, 파일이 포함된 요청은 multipart/form-data 써야함
   public ResponseEntity<EmployeeDto> create(
       @RequestPart(value = "employee")
+      @Parameter(content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE))
       @Valid EmployeeCreateRequest request,
       @RequestPart(value = "profile", required = false) MultipartFile profile
   ) {

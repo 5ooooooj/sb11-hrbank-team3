@@ -7,6 +7,8 @@ CREATE TABLE IF NOT EXISTS departments (
     created_at TIMESTAMP WITH TIME ZONE NOT NULL,
     updated_at TIMESTAMP WITH TIME ZONE NOT NULL
 );
+CREATE INDEX idx_department_name ON departments (name);
+CREATE INDEX idx_department_desc ON departments (description);
 
 -- 2. files 테이블 생성
 CREATE TABLE IF NOT EXISTS files (
@@ -35,6 +37,12 @@ CREATE TABLE IF NOT EXISTS employees (
     CONSTRAINT fk_department FOREIGN KEY (department_id) REFERENCES departments(id),
     CONSTRAINT fk_profile_image FOREIGN KEY (profile_image_id) REFERENCES files(id)
 );
+CREATE INDEX idx_emp_name ON employees (name);
+CREATE INDEX idx_emp_email ON employees (email);
+CREATE INDEX idx_emp_department ON employees (department_id);
+CREATE INDEX idx_emp_position ON employees (position);
+CREATE INDEX idx_employ_number ON employees (employee_number);
+CREATE INDEX idx_emp_status_hire_date ON employees (status, hire_date DESC);
 
 -- 4. employee_audit_histories 테이블 생성
 CREATE TABLE IF NOT EXISTS employee_audit_histories (
@@ -46,6 +54,10 @@ CREATE TABLE IF NOT EXISTS employee_audit_histories (
     ip_address VARCHAR(50) NOT NULL,
     created_at TIMESTAMP WITH TIME ZONE NOT NULL
 );
+CREATE INDEX idx_target_employee_no ON employee_audit_histories (target_employee_no);
+CREATE INDEX idx_memo ON employee_audit_histories (memo);
+CREATE INDEX idx_ip_address ON employee_audit_histories (ip_address);
+CREATE INDEX idx_audit_type_created_at ON employee_audit_histories (audit_type, created_at DESC);
 
 -- 5. backup_histories 테이블 생성
 CREATE TABLE IF NOT EXISTS backup_histories (
@@ -57,3 +69,5 @@ CREATE TABLE IF NOT EXISTS backup_histories (
     file_id BIGINT,
     CONSTRAINT fk_backup_file FOREIGN KEY (file_id) REFERENCES files(id)
 );
+CREATE INDEX idx_backup_histories_status_started_at ON backup_histories (status, started_at DESC);
+CREATE INDEX idx_worker ON backup_histories (worker);

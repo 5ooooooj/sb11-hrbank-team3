@@ -32,8 +32,9 @@ public class Employee {
   @Column(nullable = false, unique = true, length = 255)
   private String email;
 
-  @Column(name = "department_id", nullable = false)
-  private Long departmentId;
+  @ManyToOne(fetch = FetchType.LAZY)
+  @JoinColumn(name = "department_id", nullable = false)
+  private Department department;
 
   @Column(nullable = false, length = 50)
   private String position;
@@ -76,23 +77,23 @@ public class Employee {
     return "EMP-" + year + "-" + random;
   }
 
-  public static Employee create(String name, String email, Long departmentId,
+  public static Employee create(String name, String email, Department department,
       String position, LocalDate hireDate, FileMetadata profileImage) {
     Employee employee = new Employee();
     employee.name = name;
     employee.email = email;
-    employee.departmentId = departmentId;
+    employee.department = department;
     employee.position = position;
     employee.hireDate = hireDate;
     employee.profileImage = profileImage;
     return employee;
   }
 
-  public void update(String name, String email, Long departmentId,
+  public void update(String name, String email, Department department,
       String position, LocalDate hireDate, EmployeeStatus status) {
     this.name = name;
     this.email = email;
-    this.departmentId = departmentId;
+    this.department = department;
     this.position = position;
     this.hireDate = hireDate;
     this.status = status;

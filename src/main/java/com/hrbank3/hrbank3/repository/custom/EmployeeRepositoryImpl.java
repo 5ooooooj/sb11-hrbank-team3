@@ -24,6 +24,7 @@ public class EmployeeRepositoryImpl implements EmployeeRepositoryCustom {
   public List<Employee> findAllByCondition(EmployeeSearchCondition condition) {
     return queryFactory
         .selectFrom(employee)
+        .leftJoin(employee.department).fetchJoin()
         .where(
             nameOrEmailContains(condition.nameOrEmail()),
             employeeNumberContains(condition.employeeNumber()),
@@ -80,7 +81,10 @@ public class EmployeeRepositoryImpl implements EmployeeRepositoryCustom {
 
   // 부서명 부분 일치 부분은 추후 부서 연동 후 구현
   private BooleanExpression departmentNameContains(String departmentName) {
-    return null;
+    if (!StringUtils.hasText(departmentName)) {
+      return null;
+    }
+    return employee.department.name.contains(departmentName);
   }
 
   private BooleanExpression positionContains(String position) {

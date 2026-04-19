@@ -9,14 +9,17 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface DepartmentRepository extends JpaRepository<Department, Long>,
-        DepartmentRepositoryCustom {
+    DepartmentRepositoryCustom {
 
-    boolean existsByName(String name);
-    boolean existsByNameAndIdNot(String name, Long id);
+  boolean existsByName(String name);
 
-    // 부서별 직원 분포 - 직원 수 기준 내림차순
-    @Query("SELECT new com.hrbank3.hrbank3.dto.dashboard.DepartmentDistributionDto(d.id, d.name, COUNT(e)) " +
-            "FROM Department d LEFT JOIN Employee e ON e.departmentId = d.id AND e.status != 'RESIGNED' " +
-            "GROUP BY d.id, d.name ORDER BY COUNT(e) DESC")
-    List<DepartmentDistributionDto> findAllWithEmployeeCount();
+  boolean existsByNameAndIdNot(String name, Long id);
+
+  // 부서별 직원 분포 - 직원 수 기준 내림차순
+  @Query(
+      "SELECT new com.hrbank3.hrbank3.dto.dashboard.DepartmentDistributionDto(d.id, d.name, COUNT(e)) "
+          +
+          "FROM Department d LEFT JOIN Employee e ON e.department = d AND e.status != 'RESIGNED' " +
+          "GROUP BY d.id, d.name ORDER BY COUNT(e) DESC")
+  List<DepartmentDistributionDto> findAllWithEmployeeCount();
 }

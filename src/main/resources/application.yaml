@@ -21,3 +21,7 @@ springdoc:
 file:
   upload:
     path: ${FILE_UPLOAD_PATH:./uploads/}
+
+backup:
+  dir: ${BACKUP_DIR:./backups/}
+  chunk-size: 500

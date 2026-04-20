@@ -9,6 +9,7 @@ import com.hrbank3.hrbank3.repository.DepartmentRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import com.hrbank3.hrbank3.repository.EmployeeRepository;
 
 @Service
 @RequiredArgsConstructor
@@ -16,6 +17,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class DepartmentService {
 
     private final DepartmentRepository departmentRepository;
+    private final EmployeeRepository employeeRepository;
 
     // 부서 등록
     public DepartmentDto create(DepartmentCreateRequest request) {
@@ -53,6 +55,12 @@ public class DepartmentService {
     public void delete(Long id) {
         Department department = departmentRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 부서입니다: " + id));
+
+        // 소속 직원 유무 체크 추가
+        boolean hasEmployees = employeeRepository.existsByDepartmentId(id);
+        if (hasEmployees) {
+            throw new IllegalStateException("소속 직원이 있는 부서는 삭제할 수 없습니다.");
+        }
 
         departmentRepository.delete(department);
     }

@@ -4,6 +4,8 @@ import com.hrbank3.hrbank3.dto.CursorPageResponseDto;
 import com.hrbank3.hrbank3.dto.department.DepartmentDto;
 import com.hrbank3.hrbank3.entity.Department;
 import com.hrbank3.hrbank3.entity.QDepartment;
+import com.hrbank3.hrbank3.entity.QEmployee;
+import com.hrbank3.hrbank3.entity.enums.EmployeeStatus;
 import com.querydsl.core.BooleanBuilder;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
@@ -21,12 +23,13 @@ public class DepartmentRepositoryImpl implements DepartmentRepositoryCustom {
     @Override
     public CursorPageResponseDto<DepartmentDto> findAllWithCursor(
             String nameOrDescription,
-            String sortBy,
+            String sortField,       // sortBy → sortField
             String sortDirection,
-            Long lastId,
+            Long idAfter,           // lastId → idAfter
             int size) {
 
         QDepartment department = QDepartment.department;
+        QEmployee employee = QEmployee.employee;
         BooleanBuilder builder = new BooleanBuilder();
 
         // 키워드 필터링
@@ -44,8 +47,8 @@ public class DepartmentRepositoryImpl implements DepartmentRepositoryCustom {
                 .fetchCount();
 
         // 커서 조건 추가
-        if (lastId != null) {
-            builder.and(department.id.gt(lastId));
+        if (idAfter != null) {
+            builder.and(department.id.gt(idAfter));
         }
 
         // 정렬 및 조회
@@ -53,10 +56,10 @@ public class DepartmentRepositoryImpl implements DepartmentRepositoryCustom {
                 .selectFrom(department)
                 .where(builder)
                 .orderBy("desc".equals(sortDirection)
-                        ? ("establishedDate".equals(sortBy)
+                        ? ("establishedDate".equals(sortField)
                         ? department.establishedDate.desc()
                         : department.name.desc())
-                        : ("establishedDate".equals(sortBy)
+                        : ("establishedDate".equals(sortField)
                         ? department.establishedDate.asc()
                         : department.name.asc()))
                 .limit(size + 1)
@@ -68,19 +71,27 @@ public class DepartmentRepositoryImpl implements DepartmentRepositoryCustom {
             results = results.subList(0, size);
         }
 
+        // employeeCount 실제 조회
         List<DepartmentDto> content = results.stream()
-                .map(d -> new DepartmentDto(
-                        d.getId(),
-                        d.getName(),
-                        d.getDescription(),
-                        d.getEstablishedDate(),
-                        d.getCreatedAt(),
-                        d.getUpdatedAt(),
-                        0L
-                ))
+                .map(d -> {
+                    Long count = queryFactory
+                            .select(employee.count())
+                            .from(employee)
+                            .where(employee.department.eq(d),
+                                    employee.status.ne(EmployeeStatus.RESIGNED))
+                            .fetchOne();
+                    return new DepartmentDto(
+                            d.getId(),
+                            d.getName(),
+                            d.getDescription(),
+                            d.getEstablishedDate(),
+                            d.getCreatedAt(),
+                            d.getUpdatedAt(),
+                            count != null ? count : 0L
+                    );
+                })
                 .collect(Collectors.toList());
 
-        // nextCursor는 String, nextIdAfter는 Long
         String nextCursor = hasNext ? String.valueOf(results.get(results.size() - 1).getId()) : null;
         Long nextIdAfter = hasNext ? results.get(results.size() - 1).getId() : null;
 

@@ -7,9 +7,9 @@ public interface DepartmentRepositoryCustom {
 
     CursorPageResponseDto<DepartmentDto> findAllWithCursor(
             String nameOrDescription,
-            String sortBy,
+            String sortField,
             String sortDirection,
-            Long lastId,
+            Long idAfter,
             int size
     );
 }

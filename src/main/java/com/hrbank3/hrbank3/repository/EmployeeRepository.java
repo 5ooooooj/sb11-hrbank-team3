@@ -2,11 +2,12 @@ package com.hrbank3.hrbank3.repository;
 
 import com.hrbank3.hrbank3.dto.dashboard.PositionDistributionDto;
 import com.hrbank3.hrbank3.entity.Employee;
-import com.hrbank3.hrbank3.repository.custom.EmployeeRepositoryCustom;
 import com.hrbank3.hrbank3.entity.enums.EmployeeStatus;
+import com.hrbank3.hrbank3.repository.custom.EmployeeRepositoryCustom;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -17,6 +18,8 @@ public interface EmployeeRepository extends JpaRepository<Employee, Long>,
 
   // 기본적인 CRUD는 JpaRepository가 기본 제공함
   boolean existsByEmail(String email);
+
+  Optional<Employee> findByEmployeeNumber(String employeeNumber);
 
   // 특정 시간 이후 변경된 직원 존재 여부
   boolean existsByUpdatedAtAfter(Instant lastBackupTime);

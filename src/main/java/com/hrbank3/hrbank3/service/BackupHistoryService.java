@@ -30,6 +30,7 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 
+import org.apache.coyote.BadRequestException;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Slice;
@@ -75,6 +76,19 @@ public class BackupHistoryService {
     long totalElements = backupHistoryRepository.countByCondition(condition);
 
     return CursorPageResponseBackupDto.of(content, hasNext, totalElements, condition.getSortType());
+  }
+
+  // 최신 백업 조회 메서드
+  public BackupHistoryDto getLatestBackup(String status) {
+    BackupStatus backupStatus;
+    try {
+      backupStatus = BackupStatus.valueOf(status.toUpperCase());
+    } catch (IllegalArgumentException e) {
+      throw new IllegalArgumentException("유효하지 않은 상태값입니다: " + status);
+    }
+    return backupHistoryRepository.findTopByStatusOrderByStartedAtDesc(backupStatus)
+        .map(backupHistoryMapper::toDto)
+        .orElse(null);
   }
 
   // 백업 생성 메서드

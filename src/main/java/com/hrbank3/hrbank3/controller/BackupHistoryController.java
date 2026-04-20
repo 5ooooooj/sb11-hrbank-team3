@@ -37,6 +37,22 @@ public class BackupHistoryController {
       "HTTP_X_FORWARDED_FOR"
   };
 
+  @Operation(summary = "최근 백업 정보 조회", description = "지정된 상태의 가장 최근 백업 정보를 조회합니다. 상태를 지정하지 않으면 성공적으로 완료된(COMPLETED) 백업을 반환합니다.")
+  @GetMapping("/latest")
+  @ApiResponses({
+      @ApiResponse(responseCode = "200", description = "조회 성공"),
+      @ApiResponse(responseCode = "400", description = "잘못된 요청 또는 유효하지 않은 상태값"),
+      @ApiResponse(responseCode = "500", description = "서버 오류")
+  })
+  public ResponseEntity<BackupHistoryDto> getLatestBackup(
+      @RequestParam(defaultValue = "COMPLETED") String status) {
+    BackupHistoryDto result = backupHistoryService.getLatestBackup(status);
+
+    return result == null
+        ? ResponseEntity.noContent().build()
+        : ResponseEntity.ok(result);
+  }
+
   // 데이터 백업 목록 조회 api (GET)
   @Operation(summary = "데이터 백업 목록 조회", description = "조건에 따른 데이터 백업 목록을 조회합니다.")
   @GetMapping

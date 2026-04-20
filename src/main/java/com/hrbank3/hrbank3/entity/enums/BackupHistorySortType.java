@@ -1,7 +1,5 @@
 package com.hrbank3.hrbank3.entity.enums;
 
-import com.hrbank3.hrbank3.common.exception.ErrorResponse;
-
 // 정렬 타입을 enum으로 만들어서 유효하지 않은 값 입력 받지 않게
 public enum BackupHistorySortType {
   STARTED_AT_ASC,

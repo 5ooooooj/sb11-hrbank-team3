@@ -1,6 +1,7 @@
 package com.hrbank3.hrbank3.service;
 
 import com.hrbank3.hrbank3.dto.backupHistory.BackupHistoryDto;
+import com.hrbank3.hrbank3.dto.backupHistory.CursorPageResponseBackupDto;
 import com.hrbank3.hrbank3.entity.Department;
 import com.hrbank3.hrbank3.entity.Employee;
 import com.hrbank3.hrbank3.entity.FileMetadata;
@@ -11,6 +12,7 @@ import com.hrbank3.hrbank3.entity.enums.BackupStatus;
 import com.hrbank3.hrbank3.mapper.BackupHistoryMapper;
 import com.hrbank3.hrbank3.repository.BackupHistoryRepository;
 import com.hrbank3.hrbank3.repository.FileMetadataRepository;
+import com.hrbank3.hrbank3.repository.condition.BackupHistorySearchCondition;
 import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -40,6 +42,8 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 public class BackupHistoryService {
 
+  private static final int PAGE_SIZE_OFFSET = 1;
+
   private final BackupHistoryRepository backupHistoryRepository;
   private final EmployeeRepository employeeRepository;
   private final BackupHistoryMapper backupHistoryMapper;
@@ -52,7 +56,28 @@ public class BackupHistoryService {
   @Value("${backup.chunk-size:500}")
   private int chunkSize;
 
-  // 외부 진입점
+  // 백업 이력 조회
+  public CursorPageResponseBackupDto getBackupHistories(BackupHistorySearchCondition condition) {
+    // hasNext 판단을 위해 pageSize + 1개 조회
+    condition.setPageSize(condition.getPageSize() + PAGE_SIZE_OFFSET);
+
+    List<BackupHistory> histories = backupHistoryRepository.findAllByCondition(condition);
+
+    boolean hasNext = histories.size() == condition.getPageSize();
+    if (hasNext) {
+      histories = histories.subList(0, histories.size() - PAGE_SIZE_OFFSET);
+    }
+
+    List<BackupHistoryDto> content = histories.stream()
+        .map(backupHistoryMapper::toDto)
+        .toList();
+
+    long totalElements = backupHistoryRepository.countByCondition(condition);
+
+    return CursorPageResponseBackupDto.of(content, hasNext, totalElements, condition.getSortType());
+  }
+
+  // 백업 생성 메서드
   @Transactional
   public BackupHistoryDto backup(String worker) {
 

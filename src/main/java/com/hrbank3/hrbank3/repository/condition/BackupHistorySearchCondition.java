@@ -1,5 +1,6 @@
 package com.hrbank3.hrbank3.repository.condition;
 
+import com.hrbank3.hrbank3.entity.enums.BackupHistorySortType;
 import com.hrbank3.hrbank3.entity.enums.BackupStatus;
 import java.time.ZonedDateTime;
 import lombok.Getter;
@@ -17,5 +18,6 @@ public class BackupHistorySearchCondition {
   private BackupStatus status;
   private BackupHistorySortType sortType; // 정렬 조건
   private Long lastId; // 이전 페이지 마지막 요소 ID
+  private String cursor;
   private int pageSize;
 }

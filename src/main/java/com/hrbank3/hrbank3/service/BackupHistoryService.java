@@ -134,7 +134,8 @@ public class BackupHistoryService {
     Files.createDirectories(csvPath.getParent());
 
     try (BufferedWriter writer = Files.newBufferedWriter(csvPath, StandardCharsets.UTF_8)) {
-      writer.write("name,email,employeeNumber,departmentName,position,hireDate,status,profileImageId");
+      writer.write(
+          "name,email,employeeNumber,departmentName,position,hireDate,status,profileImageId");
       writer.newLine();
 
       // page = 0 이면 0~499번 조회 후 hasNext가 true면 page++1
@@ -149,11 +150,11 @@ public class BackupHistoryService {
 
         // 청크 내 departmentId 모아서 한번에 조회
         List<Long> departmentIds = slice.getContent().stream()
-            .map(Employee::getDepartmentId)
+            .map(e -> e.getDepartment().getId())
             .distinct()
             .toList();
 
-        Map<Long,String> departmentNameMap = departmentRepository.findAllById(departmentIds)
+        Map<Long, String> departmentNameMap = departmentRepository.findAllById(departmentIds)
             .stream()
             .collect(Collectors.toMap(Department::getId, Department::getName));
 
@@ -182,7 +183,7 @@ public class BackupHistoryService {
     try {
       Files.createDirectories(logPath.getParent());
       try (BufferedWriter writer = Files.newBufferedWriter(logPath, StandardCharsets.UTF_8);
-        PrintWriter printWriter = new PrintWriter(writer)) {
+          PrintWriter printWriter = new PrintWriter(writer)) {
         e.printStackTrace(printWriter); // 전체 스택트레이스 출력
       }
     } catch (IOException ioException) {
@@ -197,7 +198,7 @@ public class BackupHistoryService {
         escapeCsv(emp.getName()),
         escapeCsv(emp.getEmail()),
         escapeCsv(emp.getEmployeeNumber()),
-        escapeCsv(departmentNameMap.getOrDefault(emp.getDepartmentId(), "")),
+        escapeCsv(departmentNameMap.getOrDefault(emp.getDepartment().getId(), "")),
         escapeCsv(emp.getPosition()),
         emp.getHireDate().toString(),
         emp.getStatus().name(),
@@ -207,7 +208,9 @@ public class BackupHistoryService {
 
   // csv 형식에서 특수 문자가 포함된 값을 처리하기 위한 메서드
   private String escapeCsv(String value) {
-    if (value == null) return "";
+    if (value == null) {
+      return "";
+    }
     if (value.contains(",") || value.contains("\"") || value.contains("\n")) {
       return "\"" + value.replace("\"", "\"\"") + "\"";
     }
@@ -219,7 +222,8 @@ public class BackupHistoryService {
     if (path != null) {
       try {
         Files.deleteIfExists(path);
-      } catch (IOException ignored) {}
+      } catch (IOException ignored) {
+      }
     }
   }
 

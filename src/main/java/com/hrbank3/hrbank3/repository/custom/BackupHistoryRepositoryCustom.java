@@ -6,4 +6,6 @@ import java.util.List;
 
 public interface BackupHistoryRepositoryCustom {
   List<BackupHistory> findAllByCondition(BackupHistorySearchCondition condition);
+
+  long countByCondition(BackupHistorySearchCondition condition);
 }

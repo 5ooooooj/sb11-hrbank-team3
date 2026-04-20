@@ -50,9 +50,8 @@ public class BackupHistoryRepositoryImpl implements BackupHistoryRepositoryCusto
             cursorCondition(condition.getCursor(), condition.getLastId(), condition.getSortType())
         )
         .orderBy(resolveOrderBy(condition.getSortType()))
-        .limit(condition.getPageSize()) // 서비스에서 PAGE_SIZE + 1 로 넘어옴
+        .limit(condition.getPageSize() + 1)
         .fetch();
-
   }
 
   // BooleanExpression은 sql의 where 조건절을 객체로 표현한 것
@@ -91,34 +90,48 @@ public class BackupHistoryRepositoryImpl implements BackupHistoryRepositoryCusto
     if (cursor == null || lastId == null) return null;
 
     // Base64로 인코딩된 cursor를 디코딩해서 Instant로 변환
-    Instant cursorInstant = Instant.parse(
-        new String(Base64.getDecoder().decode(cursor))
-    );
+    String decodedCursor = new String(Base64.getDecoder().decode(cursor));
 
     return switch (sortType) {
       case STARTED_AT_ASC ->
           // 오름차순: 마지막 요소보다 startedAt이 큰 것을 가져옴
           // 단, startedAt이 같으면 id가 더 큰 것을 가져옴
-        backupHistory.startedAt.gt(cursorInstant)
+      {
+        Instant cursorInstant = Instant.parse(decodedCursor);
+        yield backupHistory.startedAt.gt(cursorInstant)
             .or(backupHistory.startedAt.eq(cursorInstant)
                 .and(backupHistory.id.gt(lastId)));
+      }
       case STARTED_AT_DESC ->
           // 내림차순: 마지막 요소보다 startedAt이 더 작은 것을 가져옴
           // 단, startedAt이 같으면 id가 더 작은 것을 가져옴
-        backupHistory.startedAt.lt(cursorInstant)
+      {
+        Instant cursorInstant = Instant.parse(decodedCursor);
+        yield backupHistory.startedAt.lt(cursorInstant)
             .or(backupHistory.startedAt.eq(cursorInstant)
                 .and(backupHistory.id.lt(lastId)));
-      case ENDED_AT_ASC ->
-        backupHistory.endedAt.gt(cursorInstant)
+      }
+      case ENDED_AT_ASC -> {
+        Instant cursorInstant = Instant.parse(decodedCursor);
+        yield backupHistory.endedAt.gt(cursorInstant)
             .or(backupHistory.endedAt.eq(cursorInstant)
                 .and(backupHistory.id.gt(lastId)));
-      case ENDED_AT_DESC ->
-        backupHistory.endedAt.lt(cursorInstant)
+      }
+      case ENDED_AT_DESC -> {
+        Instant cursorInstant = Instant.parse(decodedCursor);
+        yield backupHistory.endedAt.lt(cursorInstant)
             .or(backupHistory.endedAt.eq(cursorInstant)
                 .and(backupHistory.id.lt(lastId)));
-      case STATUS_ASC -> backupHistory.id.gt(lastId);
-      // status는 Instant가 아닌 Enum이라 커서 비교 불가능, id 대소비교로 대체
-      case STATUS_DESC -> backupHistory.id.lt(lastId);
+      }
+      case STATUS_ASC ->
+        // status 값도 cursor에 담아서 비교
+          backupHistory.status.stringValue().gt(cursor)
+          .or(backupHistory.status.stringValue().eq(cursor)
+              .and(backupHistory.id.gt(lastId)));
+      case STATUS_DESC
+          -> backupHistory.status.stringValue().lt(cursor)
+          .or(backupHistory.status.stringValue().eq(cursor)
+              .and(backupHistory.id.lt(lastId)));
     };
   }
 

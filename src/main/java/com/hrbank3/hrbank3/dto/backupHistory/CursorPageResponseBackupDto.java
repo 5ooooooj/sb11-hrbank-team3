@@ -24,12 +24,16 @@ public record CursorPageResponseBackupDto(
 
     if (hasNext && nextIdAfter != null) {
       // 정렬 기준에 따라 커서에 인코딩할 값 결정
-      Instant cursorBase = switch (sortType) {
-        case ENDED_AT_ASC, ENDED_AT_DESC -> content.get(content.size() - 1).endedAt()
-            .toInstant();
-        default -> content.get(content.size() - 1).startedAt().toInstant();
+      String cursorBase = switch (sortType) {
+        case ENDED_AT_ASC, ENDED_AT_DESC ->
+            content.get(content.size() - 1).endedAt()
+            .toInstant().toString();
+        case STATUS_ASC, STATUS_DESC ->
+            content.get(content.size() - 1).status();
+        default ->
+            content.get(content.size() - 1).startedAt().toInstant().toString();
       };
-      nextCursor = Base64.getEncoder().encodeToString(cursorBase.toString().getBytes());
+      nextCursor = Base64.getEncoder().encodeToString(cursorBase.getBytes());
     }
 
     return new CursorPageResponseBackupDto(

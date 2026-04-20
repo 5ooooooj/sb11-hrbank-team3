@@ -59,8 +59,6 @@ public class BackupHistoryService {
   // 백업 이력 조회
   public CursorPageResponseBackupDto getBackupHistories(BackupHistorySearchCondition condition) {
     // hasNext 판단을 위해 pageSize + 1개 조회
-    condition.setPageSize(condition.getPageSize() + PAGE_SIZE_OFFSET);
-
     List<BackupHistory> histories = backupHistoryRepository.findAllByCondition(condition);
 
     boolean hasNext = histories.size() == condition.getPageSize();
@@ -78,7 +76,7 @@ public class BackupHistoryService {
   }
 
   // 최신 백업 조회 메서드
-  public BackupHistoryDto getLatestBackup(String status) {
+  public Optional<BackupHistoryDto> getLatestBackup(String status) {
     BackupStatus backupStatus;
     try {
       backupStatus = BackupStatus.valueOf(status.toUpperCase());
@@ -86,8 +84,7 @@ public class BackupHistoryService {
       throw new IllegalArgumentException("유효하지 않은 상태값입니다: " + status);
     }
     return backupHistoryRepository.findTopByStatusOrderByStartedAtDesc(backupStatus)
-        .map(backupHistoryMapper::toDto)
-        .orElse(null);
+        .map(backupHistoryMapper::toDto);
   }
 
   // 백업 생성 메서드

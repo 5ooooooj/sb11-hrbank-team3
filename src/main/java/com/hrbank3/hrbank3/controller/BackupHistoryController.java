@@ -12,6 +12,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 import java.time.ZonedDateTime;
+import java.util.NoSuchElementException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
@@ -46,11 +47,9 @@ public class BackupHistoryController {
   })
   public ResponseEntity<BackupHistoryDto> getLatestBackup(
       @RequestParam(defaultValue = "COMPLETED") String status) {
-    BackupHistoryDto result = backupHistoryService.getLatestBackup(status);
-
-    return result == null
-        ? ResponseEntity.noContent().build()
-        : ResponseEntity.ok(result);
+    return backupHistoryService.getLatestBackup(status)
+        .map(ResponseEntity::ok)
+        .orElseThrow(() -> new NoSuchElementException("백업 이력이 없습니다"));
   }
 
   // 데이터 백업 목록 조회 api (GET)

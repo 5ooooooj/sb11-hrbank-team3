@@ -53,7 +53,7 @@ CREATE TABLE IF NOT EXISTS backup_histories (
     worker VARCHAR(45) NOT NULL,
     started_at TIMESTAMP WITH TIME ZONE NOT NULL,
     ended_at TIMESTAMP WITH TIME ZONE,
-    status VARCHAR(10) NOT NULL,
+    status VARCHAR(20) NOT NULL,
     file_id BIGINT,
     CONSTRAINT fk_backup_file FOREIGN KEY (file_id) REFERENCES files(id)
 );

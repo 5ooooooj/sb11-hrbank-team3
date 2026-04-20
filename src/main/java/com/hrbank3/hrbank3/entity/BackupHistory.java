@@ -10,7 +10,7 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
-import jakarta.persistence.OneToOne;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import java.time.Instant;
 import lombok.AccessLevel;
@@ -41,7 +41,9 @@ public class BackupHistory {
   @Column(nullable = false)
   private BackupStatus status;
 
-  @OneToOne(fetch = FetchType.LAZY)
+  // OneToOne은 FileMetadata 하나에 BackupHistory 하나만 연결된다는 의미
+  // 이론상 같은 파일이 여러 백업 이력에서 참조될 가능성을 열어둠
+  @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "file_id")
   private FileMetadata file;
 

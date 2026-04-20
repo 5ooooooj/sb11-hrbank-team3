@@ -1,12 +1,16 @@
 package com.hrbank3.hrbank3.service;
 
 import com.hrbank3.hrbank3.common.util.IpExtractUtil;
+import com.hrbank3.hrbank3.dto.audit_history.ChangeLogDetailDto;
+import com.hrbank3.hrbank3.dto.audit_history.DiffDto;
 import com.hrbank3.hrbank3.entity.EmployeeAuditHistory;
 import com.hrbank3.hrbank3.entity.enums.AuditType;
 import com.hrbank3.hrbank3.event.EmployeeAuditEvent;
 import com.hrbank3.hrbank3.repository.EmployeeAuditHistoryRepository;
+import com.hrbank3.hrbank3.repository.EmployeeRepository;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
@@ -20,6 +24,8 @@ import org.springframework.transaction.annotation.Transactional;
 public class EmployeeAuditHistoryService {
 
   private final EmployeeAuditHistoryRepository auditRepository;
+  private final EmployeeRepository employeeRepository;
+
 
   // 직원 정보 수정 시 발생하는 핸들링
   @Transactional
@@ -64,5 +70,77 @@ public class EmployeeAuditHistoryService {
       }
     }
     return diffMap;
+  }
+
+  // 상세 데이터 읽기
+  @Transactional(readOnly = true)
+  public ChangeLogDetailDto getAuditDetail(Long id) {
+    EmployeeAuditHistory audit = auditRepository.findById(id)
+        .orElseThrow(() -> new IllegalArgumentException("이력을 찾을 수 없습니다."));
+
+    List<DiffDto> diffs = audit.getChangedContent().entrySet().stream()
+        .map(entry -> {
+          if (!(entry.getValue() instanceof Map<?, ?> values)) {
+            return new DiffDto(entry.getKey(), "-", "-");
+          }
+
+          return new DiffDto(
+              entry.getKey(),
+              String.valueOf(values.get("before")),
+              String.valueOf(values.get("after"))
+          );
+        })
+        .toList();
+
+    EmployeeInfo info = resolveEmployeeInfo(audit, diffs);
+
+    return new ChangeLogDetailDto(
+        audit.getId(),
+        audit.getAuditType().name(),
+        audit.getTargetEmployeeNo(),
+        audit.getMemo(),
+        audit.getIpAddress(),
+        audit.getCreatedAt(),
+        info.name(),
+        info.profileImageId(),
+        diffs
+    );
+  }
+
+  // 사원 이름 및
+  private EmployeeInfo resolveEmployeeInfo(EmployeeAuditHistory audit, List<DiffDto> diffs) {
+    return employeeRepository.findByEmployeeNumber(audit.getTargetEmployeeNo())
+        .map(e -> new EmployeeInfo(
+            e.getName(),
+            e.getProfileImage() != null ? e.getProfileImage().getId() : null
+        ))
+        .orElseGet(() -> {
+          String deletedName = diffs.stream()
+              .filter(d -> "name".equals(d.propertyName()))
+              .map(DiffDto::before)
+              .findFirst()
+              .orElse("알 수 없음");
+
+          Long deletedProfileId = diffs.stream()
+              .filter(d -> "profileImageId".equals(d.propertyName()))
+              .map(DiffDto::before)
+              .filter(val -> val != null && !"-".equals(val) && !"null".equals(val)) // 파싱 에러 방지
+              .map(val -> {
+                try {
+                  return Long.parseLong(val);
+                } catch (NumberFormatException ex) {
+                  return null;
+                }
+              })
+              .filter(Objects::nonNull)
+              .findFirst()
+              .orElse(null);
+          return new EmployeeInfo(deletedName, deletedProfileId);
+        });
+  }
+
+  // 데이터 전달용 임시 레코드
+  private record EmployeeInfo(String name, Long profileImageId) {
+
   }
 }

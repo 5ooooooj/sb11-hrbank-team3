@@ -14,6 +14,7 @@ import java.util.Optional;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
@@ -24,7 +25,7 @@ public class BackupHistoryTransaction {
     private final FileMetadataRepository fileMetadataRepository;
 
   // 백업 필요 여부 반한 후 IN_PROGRESS 또는 SKIPPED 이력 저장 메서드
-  @Transactional
+  @Transactional(propagation = Propagation.REQUIRES_NEW)
   public BackupHistory initiate(String worker) {
     // IN_PROGRESS 중복 체크
     boolean isInProgress = backupHistoryRepository.existsByStatus(BackupStatus.IN_PROGRESS);
@@ -60,20 +61,20 @@ public class BackupHistoryTransaction {
     return employeeRepository.existsByUpdatedAtAfter(lastBackupTime);
   }
 
-    @Transactional
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void complete(BackupHistory history, FileMetadata file) {
       history.updateComplete(file);
       backupHistoryRepository.save(history);
     }
 
-    @Transactional
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void fail(BackupHistory history, FileMetadata logFile) {
       history.updateFail(logFile);
       backupHistoryRepository.save(history);
     }
 
   // Path를 받아 FileMetadata 엔티티 생성 후 db 저장
-  @Transactional
+  @Transactional(propagation = Propagation.REQUIRES_NEW)
   public FileMetadata saveFileMetadata(Path filePath, String contentType) throws IOException {
     String originalName = filePath.getFileName().toString();
     String storedName = UUID.randomUUID().toString();

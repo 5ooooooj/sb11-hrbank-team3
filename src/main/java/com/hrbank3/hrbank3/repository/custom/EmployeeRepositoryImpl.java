@@ -25,6 +25,7 @@ public class EmployeeRepositoryImpl implements EmployeeRepositoryCustom {
     return queryFactory
         .selectFrom(employee)
         .leftJoin(employee.department).fetchJoin()
+        .leftJoin(employee.profileImage).fetchJoin()
         .where(
             nameOrEmailContains(condition.nameOrEmail()),
             employeeNumberContains(condition.employeeNumber()),

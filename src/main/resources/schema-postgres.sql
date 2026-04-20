@@ -83,3 +83,24 @@ CREATE TABLE IF NOT EXISTS backup_histories (
 CREATE INDEX idx_backup_histories_status_started_at ON backup_histories (status, started_at DESC);
 -- 작업자 (부분 일치)
 CREATE INDEX idx_worker ON backup_histories USING gin(worker gin_trgm_ops);
+
+-- 6. notifications 테이블 생성
+CREATE TABLE IF NOT EXISTS notifications (
+    id BIGSERIAL PRIMARY KEY,
+    event_type VARCHAR(255) NOT NULL,
+    department_id BIGINT,
+    recipient_email VARCHAR(255) NOT NULL,
+    content TEXT NOT NULL,
+    status VARCHAR(20) NOT NULL,
+    created_at TIMESTAMPTZ NOT NULL,
+    updated_at TIMESTAMPTZ NOT NULL,
+    CONSTRAINT fk_notification_department FOREIGN KEY (department_id) REFERENCES departments(id)
+);
+-- 부서ID (조인 성능 향상)
+CREATE INDEX idx_notification_department_id ON notifications (department_id);
+-- 이벤트 유형 및 생성 시간
+CREATE INDEX idx_notification_event_type_created_at ON notifications (event_type, created_at DESC);
+-- 상태 (발송 실패 재처리 시)
+CREATE INDEX idx_notification_status ON notifications (status);
+-- 최근 발송된 알림 순
+CREATE INDEX idx_notification_created_at ON notifications (created_at DESC);

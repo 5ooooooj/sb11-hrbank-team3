@@ -71,3 +71,24 @@ CREATE TABLE IF NOT EXISTS backup_histories (
 );
 CREATE INDEX idx_backup_histories_status_started_at ON backup_histories (status, started_at DESC);
 CREATE INDEX idx_worker ON backup_histories (worker);
+
+-- 6. notifications 테이블 생성
+CREATE TABLE IF NOT EXISTS notifications (
+    id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    event_type VARCHAR(255) NOT NULL,
+    department_id BIGINT,
+    recipient_email VARCHAR(255) NOT NULL,
+    content TEXT NOT NULL,
+    status VARCHAR(20) NOT NULL,
+    created_at TIMESTAMP WITH TIME ZONE NOT NULL,
+    updated_at TIMESTAMP WITH TIME ZONE NOT NULL,
+    CONSTRAINT fk_notification_department FOREIGN KEY (department_id) REFERENCES departments(id)
+    );
+-- 입사 알림만, 백업 알림만 조회
+CREATE INDEX idx_notification_event_type ON notifications (event_type);
+-- 특정 부서 발송된 알림 조회, FK 컬럼이며 조인시 성능 향상
+CREATE INDEX idx_notification_department_id ON notifications (department_id);
+-- FAILED 알림만 조회 후 재발송시 유용
+CREATE INDEX idx_notification_status ON notifications (status);
+-- 최근 발송된 알림 순
+CREATE INDEX idx_notification_created_at ON notifications (created_at DESC);

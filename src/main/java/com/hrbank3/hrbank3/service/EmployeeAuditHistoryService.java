@@ -1,13 +1,17 @@
 package com.hrbank3.hrbank3.service;
 
 import com.hrbank3.hrbank3.common.util.IpExtractUtil;
+import com.hrbank3.hrbank3.dto.CursorPageResponseDto;
 import com.hrbank3.hrbank3.dto.audit_history.ChangeLogDetailDto;
+import com.hrbank3.hrbank3.dto.audit_history.ChangeLogDto;
 import com.hrbank3.hrbank3.dto.audit_history.DiffDto;
 import com.hrbank3.hrbank3.entity.EmployeeAuditHistory;
 import com.hrbank3.hrbank3.entity.enums.AuditType;
 import com.hrbank3.hrbank3.event.EmployeeAuditEvent;
 import com.hrbank3.hrbank3.repository.EmployeeAuditHistoryRepository;
 import com.hrbank3.hrbank3.repository.EmployeeRepository;
+import com.hrbank3.hrbank3.repository.condition.ChangeLogSearchCondition;
+import com.hrbank3.hrbank3.repository.custom.EmployeeAuditHistoryRepositoryCustom;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -24,10 +28,11 @@ import org.springframework.transaction.annotation.Transactional;
 public class EmployeeAuditHistoryService {
 
   private final EmployeeAuditHistoryRepository auditRepository;
+  private final EmployeeAuditHistoryRepositoryCustom customAuditRepository;
   private final EmployeeRepository employeeRepository;
 
-
   // 직원 정보 수정 시 발생하는 핸들링
+
   @Transactional
   @EventListener
   public void recordAuditHistory(EmployeeAuditEvent event) {
@@ -72,15 +77,21 @@ public class EmployeeAuditHistoryService {
     return diffMap;
   }
 
+  @Transactional(readOnly = true)
+  public CursorPageResponseDto<ChangeLogDto> findAll(ChangeLogSearchCondition condition) {
+    return customAuditRepository.findAllWithCursor(condition);
+  }
+
   // 상세 데이터 읽기
   @Transactional(readOnly = true)
-  public ChangeLogDetailDto getAuditDetail(Long id) {
+  public ChangeLogDetailDto find(Long id) {
     EmployeeAuditHistory audit = auditRepository.findById(id)
         .orElseThrow(() -> new IllegalArgumentException("이력을 찾을 수 없습니다."));
 
     List<DiffDto> diffs = audit.getChangedContent().entrySet().stream()
         .map(entry -> {
           if (!(entry.getValue() instanceof Map<?, ?> values)) {
+            // 만약 Map 형태가 아니라면 안전하게 기본값("-") 반환
             return new DiffDto(entry.getKey(), "-", "-");
           }
 
@@ -107,7 +118,7 @@ public class EmployeeAuditHistoryService {
     );
   }
 
-  // 사원 이름 및
+  // 사원 이름 및 프로필 이미지 추출
   private EmployeeInfo resolveEmployeeInfo(EmployeeAuditHistory audit, List<DiffDto> diffs) {
     return employeeRepository.findByEmployeeNumber(audit.getTargetEmployeeNo())
         .map(e -> new EmployeeInfo(

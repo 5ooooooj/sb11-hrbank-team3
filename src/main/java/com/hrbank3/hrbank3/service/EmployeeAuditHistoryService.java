@@ -80,7 +80,10 @@ public class EmployeeAuditHistoryService {
 
     List<DiffDto> diffs = audit.getChangedContent().entrySet().stream()
         .map(entry -> {
-          Map<String, Object> values = (Map<String, Object>) entry.getValue();
+          if (!(entry.getValue() instanceof Map<?, ?> values)) {
+            return new DiffDto(entry.getKey(), "-", "-");
+          }
+
           return new DiffDto(
               entry.getKey(),
               String.valueOf(values.get("before")),

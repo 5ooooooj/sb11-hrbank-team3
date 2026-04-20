@@ -1,5 +1,6 @@
 package com.hrbank3.hrbank3.entity;
 
+import com.hrbank3.hrbank3.entity.enums.EmployeeStatus;
 import jakarta.persistence.*;
 import java.time.Instant;
 import java.time.LocalDate;
@@ -31,8 +32,9 @@ public class Employee {
   @Column(nullable = false, unique = true, length = 255)
   private String email;
 
-  @Column(name = "department_id", nullable = false)
-  private Long departmentId;
+  @ManyToOne(fetch = FetchType.LAZY)
+  @JoinColumn(name = "department_id", nullable = false)
+  private Department department;
 
   @Column(nullable = false, length = 50)
   private String position;
@@ -44,8 +46,9 @@ public class Employee {
   @Column(name = "hire_date", nullable = false)
   private LocalDate hireDate;
 
-  @Column(name = "profile_image_id")
-  private Long profileImageId;
+  @OneToOne(fetch = FetchType.LAZY, orphanRemoval = true, cascade = CascadeType.ALL)
+  @JoinColumn(name = "profile_image_id")
+  private FileMetadata profileImage;
 
   @CreatedDate
   @Column(name = "created_at", nullable = false, updatable = false)
@@ -74,26 +77,29 @@ public class Employee {
     return "EMP-" + year + "-" + random;
   }
 
-  public static Employee create(String name, String email, Long departmentId,
-      String position, LocalDate hireDate, Long profileImageId) {
+  public static Employee create(String name, String email, Department department,
+      String position, LocalDate hireDate, FileMetadata profileImage) {
     Employee employee = new Employee();
     employee.name = name;
     employee.email = email;
-    employee.departmentId = departmentId;
+    employee.department = department;
     employee.position = position;
     employee.hireDate = hireDate;
-    employee.profileImageId = profileImageId;
+    employee.profileImage = profileImage;
     return employee;
   }
 
-  public void update(String name, String email, Long departmentId,
-      String position, LocalDate hireDate, EmployeeStatus status, Long profileImageId) {
+  public void update(String name, String email, Department department,
+      String position, LocalDate hireDate, EmployeeStatus status) {
     this.name = name;
     this.email = email;
-    this.departmentId = departmentId;
+    this.department = department;
     this.position = position;
     this.hireDate = hireDate;
     this.status = status;
-    this.profileImageId = profileImageId;
+  }
+
+  public void updateProfileImage(FileMetadata newProfileImage) {
+    this.profileImage = newProfileImage;
   }
 }

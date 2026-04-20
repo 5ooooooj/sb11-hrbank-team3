@@ -1,3 +1,5 @@
+CREATE EXTENSION IF NOT EXISTS pg_trgm;
+
 -- 1. departments 테이블 생성
 CREATE TABLE IF NOT EXISTS departments (
     id BIGSERIAL PRIMARY KEY,
@@ -7,6 +9,8 @@ CREATE TABLE IF NOT EXISTS departments (
     created_at TIMESTAMPTZ NOT NULL,
     updated_at TIMESTAMPTZ NOT NULL
 );
+-- 이름 또는 설명 (부분 일치 조건으로 인덱스 생성)
+CREATE INDEX idx_department_name_desc ON departments USING gin(name gin_trgm_ops, description gin_trgm_ops);
 
 -- 2. files 테이블 생성
 CREATE TABLE IF NOT EXISTS files (
@@ -35,6 +39,16 @@ CREATE TABLE IF NOT EXISTS employees (
     CONSTRAINT fk_department FOREIGN KEY (department_id) REFERENCES departments(id),
     CONSTRAINT fk_profile_image FOREIGN KEY (profile_image_id) REFERENCES files(id)
 );
+-- 이름 또는 이메일 (부분 일치 조건으로 인덱스 생성)
+CREATE INDEX idx_name_email ON employees USING  gin(name gin_trgm_ops, email gin_trgm_ops);
+-- 부서ID (부서명 검색 시 departments 테이블과 빠른 조인을 위하여 일반 인덱스 사용)
+CREATE INDEX idx_emp_department_id On employees (department_id);
+-- 직함 (부분 일치)
+CREATE INDEX idx_position ON employees USING gin(position gin_trgm_ops);
+-- 사원번호 (부분 일치)
+CREATE INDEX idx_employee_number ON employees USING gin(employee_number gin_trgm_ops);
+-- 상태 및 입사일 (완전 일치인 상태를 앞에 두어 상태를 기준으로 먼저 정렬 후 입사일 범위 조건)
+CREATE INDEX idx_status_hire_date ON employees (status, hire_date DESC);
 
 -- 4. employee_audit_histories 테이블 생성
 CREATE TABLE IF NOT EXISTS employee_audit_histories (
@@ -46,6 +60,14 @@ CREATE TABLE IF NOT EXISTS employee_audit_histories (
     ip_address VARCHAR(50) NOT NULL,
     created_at TIMESTAMPTZ NOT NULL
 );
+-- 대상 직원 사번 (부분 일치)
+CREATE INDEX idx_target_employee_no ON employee_audit_histories USING gin(target_employee_no gin_trgm_ops);
+-- 메모 (부분 일치)
+CREATE INDEX idx_memo ON employee_audit_histories USING gin(memo gin_trgm_ops);
+-- IP주소 (부분 일치)
+CREATE INDEX idx_ip_address ON employee_audit_histories USING gin(ip_address gin_trgm_ops);
+-- 유형 및 시간 (완전 일치인 유형을 앞에 두어 유형을 기준으로 먼저 정렬 후 시간 범위 조건)
+CREATE INDEX idx_audit_type_created_at ON employee_audit_histories (audit_type, created_at DESC);
 
 -- 5. backup_histories 테이블 생성
 CREATE TABLE IF NOT EXISTS backup_histories (
@@ -53,7 +75,11 @@ CREATE TABLE IF NOT EXISTS backup_histories (
     worker VARCHAR(45) NOT NULL,
     started_at TIMESTAMPTZ NOT NULL,
     ended_at TIMESTAMPTZ,
-    status VARCHAR(10) NOT NULL,
+    status VARCHAR(20) NOT NULL,
     file_id BIGINT,
     CONSTRAINT fk_backup_file FOREIGN KEY (file_id) REFERENCES files(id)
 );
+-- 상태 및 시작 시간
+CREATE INDEX idx_backup_histories_status_started_at ON backup_histories (status, started_at DESC);
+-- 작업자 (부분 일치)
+CREATE INDEX idx_worker ON backup_histories USING gin(worker gin_trgm_ops);

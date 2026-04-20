@@ -6,6 +6,7 @@ import com.hrbank3.hrbank3.repository.FileMetadataRepository;
 import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
@@ -35,7 +36,7 @@ public class FileService {
   private String uploadPath;
 
   @Transactional
-  public Long uploadFile(MultipartFile multipartFile) {
+  public FileMetadata uploadFile(MultipartFile multipartFile) {
     // 파일 존재 여부 검증
     if(multipartFile == null || multipartFile.isEmpty()) {
       throw new IllegalArgumentException("업로드된 파일이 없습니다.");
@@ -86,13 +87,15 @@ public class FileService {
     File localDisc = new File(storagePath);
     try {
       // transferTo() -> 파일 저장 과정에서 발생할 수 있는 I/O관련 예외를 자동으로 처리
-      multipartFile.transferTo(localDisc);
+      // transferTo()에 상대 경로(./)를 그대로 넘기고 톰캣 임시 폴더(work/Tomcat/...)를 참조하여 FileNotFoundException 발생
+      // getAbsoluteFile()을 사용하여 로컬(상대 경로)과 운영(절대 경로) 환경 모두 안전하게 물리 파일을 저장함
+      multipartFile.transferTo(localDisc.getAbsoluteFile());
     } catch (IOException e) {
       throw new RuntimeException("파일 저장 중 시스템 오류가 발생했습니다.", e);
     }
 
     // 응답 ID 반환
-    return savedFile.getId();
+    return savedFile;
   }
 
   @Transactional(readOnly = true)
@@ -119,6 +122,19 @@ public class FileService {
       );
     } catch (MalformedURLException e) {
       throw new RuntimeException("파일 경로를 읽는 도중 시스템 오류가 발생했습니다.", e);
+    }
+  }
+
+  public void deletePhysicalFile(String storagePath) {
+    if(storagePath == null || storagePath.isEmpty()) {
+      return;
+    }
+
+    try {
+      Path filePath = Paths.get(storagePath);
+      Files.deleteIfExists(filePath);
+    } catch (IOException e) {
+      throw new RuntimeException("물리파일 삭제 중 에러가 발생했습니다." + storagePath, e);
     }
   }
 }

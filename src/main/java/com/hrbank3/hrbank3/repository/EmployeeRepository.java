@@ -12,6 +12,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import com.hrbank3.hrbank3.entity.Department;
 
 public interface EmployeeRepository extends JpaRepository<Employee, Long>,
     EmployeeRepositoryCustom {
@@ -45,10 +46,12 @@ public interface EmployeeRepository extends JpaRepository<Employee, Long>,
   @Query("SELECT e FROM Employee e LEFT JOIN FETCH e.profileImage")
   Slice<Employee> findAllWithProfileImage(Pageable pageable);
 
-  boolean existsByDepartmentId(Long departmentId);
+  boolean existsByDepartment(Department department);
 
   long countByStatus(EmployeeStatus status);
 
   long countByHireDateBetweenAndStatus(LocalDate from, LocalDate to, EmployeeStatus status);
+
+  long countByDepartmentIdAndStatusNot(Long departmentId, EmployeeStatus status);
 
 }

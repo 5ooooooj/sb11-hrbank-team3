@@ -11,7 +11,6 @@ import com.hrbank3.hrbank3.entity.BackupHistory;
 import com.hrbank3.hrbank3.entity.enums.BackupStatus;
 import com.hrbank3.hrbank3.mapper.BackupHistoryMapper;
 import com.hrbank3.hrbank3.repository.BackupHistoryRepository;
-import com.hrbank3.hrbank3.repository.FileMetadataRepository;
 import com.hrbank3.hrbank3.repository.condition.BackupHistorySearchCondition;
 import java.io.BufferedWriter;
 import java.io.IOException;
@@ -26,7 +25,6 @@ import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.UUID;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 
@@ -38,7 +36,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
-@Transactional(readOnly = true)
 @RequiredArgsConstructor
 public class BackupHistoryService {
 
@@ -48,7 +45,7 @@ public class BackupHistoryService {
   private final EmployeeRepository employeeRepository;
   private final BackupHistoryMapper backupHistoryMapper;
   private final DepartmentRepository departmentRepository;
-  private final FileMetadataRepository fileMetadataRepository;
+  private final BackupHistoryTransaction backupHistoryTransaction;
 
   @Value("${backup.dir}")
   private String backupDir;
@@ -57,6 +54,7 @@ public class BackupHistoryService {
   private int chunkSize;
 
   // 백업 이력 조회
+  @Transactional(readOnly = true)
   public CursorPageResponseBackupDto getBackupHistories(BackupHistorySearchCondition condition) {
     // hasNext 판단을 위해 pageSize + 1개 조회
     List<BackupHistory> histories = backupHistoryRepository.findAllByCondition(condition);
@@ -76,6 +74,7 @@ public class BackupHistoryService {
   }
 
   // 최신 백업 조회 메서드
+  @Transactional(readOnly = true)
   public Optional<BackupHistoryDto> getLatestBackup(String status) {
     BackupStatus backupStatus;
     try {
@@ -88,10 +87,9 @@ public class BackupHistoryService {
   }
 
   // 백업 생성 메서드
-  @Transactional
   public BackupHistoryDto backup(String worker) {
 
-    BackupHistory history = initiate(worker);
+    BackupHistory history = backupHistoryTransaction.initiate(worker); // 내부에 별도 트랜잭션
 
     // history가 SKIPPED면 바로 반환
     if (history.getStatus() == BackupStatus.SKIPPED) {
@@ -102,61 +100,25 @@ public class BackupHistoryService {
     return execute(history);
   }
 
-  // 백업 필요 여부 반한 후 IN_PROGRESS 또는 SKIPPED 이력 저장 메서드
-  private BackupHistory initiate(String worker) {
-    // IN_PROGRESS 중복 체크
-    boolean isInProgress = backupHistoryRepository.existsByStatus(BackupStatus.IN_PROGRESS);
-
-    if (isInProgress) {
-      throw new IllegalStateException("이미 진행 중인 백업이 있습니다.");
-    }
-
-    // worker null 체크
-    if (worker == null || worker.isBlank()) {
-      throw new IllegalArgumentException("작업자 정보가 없습니다.");
-    }
-
-    // 백업 필요 없으면 skipped 상태로 저장
-    BackupHistory history = isBackupNeeded()
-        ? BackupHistory.ofInProgress(worker)
-        : BackupHistory.ofSkipped(worker);
-
-    return backupHistoryRepository.save(history);
-  }
-
-  // 백업 필요한지 판단 로직
-  private boolean isBackupNeeded() {
-    Optional<BackupHistory> lastCompleted =
-        backupHistoryRepository.findTopByStatusOrderByStartedAtDesc(BackupStatus.COMPLETED);
-
-    if (lastCompleted.isEmpty()) {
-      return true; // 완료된 백업 이력 자체가 없으면 백업 필요
-    }
-
-    Instant lastBackupTime = lastCompleted.get().getEndedAt();
-    // 마지막 백업 완료된 시간 이후 직원 데이터가 변경됐는지 확인하는 메소드
-    return employeeRepository.existsByUpdatedAtAfter(lastBackupTime);
-  }
-
   // 실제 백업 수행 및 성공/실패 처리, 성공이면 COMPLETED, 실패면 CSV 삭제 후 에러 로그 저장 후 FAILED
   private BackupHistoryDto execute(BackupHistory history) {
     Path csvPath = null;
     try {
       csvPath = writeCsv();
-      FileMetadata file = saveFileMetadata(csvPath, "text/csv");
-      history.updateComplete(file);
+      FileMetadata file = backupHistoryTransaction.saveFileMetadata(csvPath, "text/csv");
+      backupHistoryTransaction.complete(history, file);
     } catch (Exception e) {
       deleteSilently(csvPath);
       try {
         Path logPath = writeErrorLog(e);
-        FileMetadata logFile = saveFileMetadata(logPath, "text/plain");
-        history.updateFail(logFile);
+        FileMetadata logFile = backupHistoryTransaction.saveFileMetadata(logPath, "text/plain");
+        backupHistoryTransaction.fail(history, logFile);
       } catch (IOException logException) {
         // 로그 저장도 실패 시 파일 없이 FAILED 처리
-        history.updateFail(null);
+        backupHistoryTransaction.fail(history, null);
       }
     }
-    return backupHistoryMapper.toDto(backupHistoryRepository.save(history));
+    return backupHistoryMapper.toDto(history);
   }
 
   // 청크(500건) 단위로 직원 조회 후 CSV 파일 생성
@@ -262,21 +224,6 @@ public class BackupHistoryService {
     }
   }
 
-  // Path를 받아 FileMetadata 엔티티 생성 후 db 저장
-  private FileMetadata saveFileMetadata(Path filePath, String contentType) throws IOException {
-    String originalName = filePath.getFileName().toString();
-    String storedName = UUID.randomUUID().toString();
-    long fileSize = Files.size(filePath);
 
-    FileMetadata fileMetadata = new FileMetadata(
-        originalName,
-        storedName,
-        contentType,
-        fileSize,
-        filePath.toString()
-    );
-
-    return fileMetadataRepository.save(fileMetadata);
-  }
 
 }

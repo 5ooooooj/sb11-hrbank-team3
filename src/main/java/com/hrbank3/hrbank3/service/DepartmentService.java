@@ -51,7 +51,9 @@ public class DepartmentService {
         Department department = departmentRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 부서입니다: " + id));
 
-        boolean hasEmployees = employeeRepository.existsByDepartmentId(id);
+        // 변경 전: employeeRepository.existsByDepartmentId(id)
+        // 변경 후: department 객체 직접 전달
+        boolean hasEmployees = employeeRepository.existsByDepartment(department);
         if (hasEmployees) {
             throw new IllegalStateException("소속 직원이 있는 부서는 삭제할 수 없습니다.");
         }

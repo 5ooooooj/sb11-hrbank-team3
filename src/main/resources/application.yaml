@@ -25,3 +25,5 @@ file:
 backup:
   dir: ${BACKUP_DIR:./backups/}
   chunk-size: 500
+  schedule:
+    cron: "0 0 * * * *" # 매 시 정각에 하도록 세팅

@@ -5,11 +5,12 @@ import com.hrbank3.hrbank3.dto.department.DepartmentDto;
 import com.hrbank3.hrbank3.dto.department.DepartmentCreateRequest;
 import com.hrbank3.hrbank3.dto.department.DepartmentUpdateRequest;
 import com.hrbank3.hrbank3.entity.Department;
+import com.hrbank3.hrbank3.entity.enums.EmployeeStatus;
 import com.hrbank3.hrbank3.repository.DepartmentRepository;
+import com.hrbank3.hrbank3.repository.EmployeeRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import com.hrbank3.hrbank3.repository.EmployeeRepository;
 
 @Service
 @RequiredArgsConstructor
@@ -21,17 +22,14 @@ public class DepartmentService {
 
     // 부서 등록
     public DepartmentDto create(DepartmentCreateRequest request) {
-        // 이름 중복 체크
         if (departmentRepository.existsByName(request.name())) {
             throw new IllegalArgumentException("이미 존재하는 부서 이름입니다: " + request.name());
         }
-
         Department department = new Department(
                 request.name(),
                 request.description(),
                 request.establishedDate()
         );
-
         Department saved = departmentRepository.save(department);
         return toDto(saved);
     }
@@ -41,13 +39,10 @@ public class DepartmentService {
         Department department = departmentRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 부서입니다: " + id));
 
-        // 자기 자신 제외하고 이름 중복 체크
         if (departmentRepository.existsByNameAndIdNot(request.name(), id)) {
             throw new IllegalArgumentException("이미 존재하는 부서 이름입니다: " + request.name());
         }
-
         department.update(request.name(), request.description(), request.establishedDate());
-
         return toDto(department);
     }
 
@@ -56,12 +51,10 @@ public class DepartmentService {
         Department department = departmentRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 부서입니다: " + id));
 
-        // 소속 직원 유무 체크 추가
         boolean hasEmployees = employeeRepository.existsByDepartmentId(id);
         if (hasEmployees) {
             throw new IllegalStateException("소속 직원이 있는 부서는 삭제할 수 없습니다.");
         }
-
         departmentRepository.delete(department);
     }
 
@@ -69,13 +62,14 @@ public class DepartmentService {
     @Transactional(readOnly = true)
     public CursorPageResponseDto<DepartmentDto> findAll(
             String nameOrDescription,
-            String sortBy,
+            String sortField,
             String sortDirection,
-            Long lastId,
+            Long idAfter,
             int size) {
         return departmentRepository.findAllWithCursor(
-                nameOrDescription, sortBy, sortDirection, lastId, size);
+                nameOrDescription, sortField, sortDirection, idAfter, size);
     }
+
     // 부서 단건 조회
     @Transactional(readOnly = true)
     public DepartmentDto findById(Long id) {
@@ -84,8 +78,10 @@ public class DepartmentService {
         return toDto(department);
     }
 
-    // Entity -> DTO 변환
+    // Entity -> DTO 변환 (실제 직원 수 조회)
     private DepartmentDto toDto(Department department) {
+        long count = employeeRepository.countByDepartmentIdAndStatusNot(
+                department.getId(), EmployeeStatus.RESIGNED);
         return new DepartmentDto(
                 department.getId(),
                 department.getName(),
@@ -93,7 +89,7 @@ public class DepartmentService {
                 department.getEstablishedDate(),
                 department.getCreatedAt(),
                 department.getUpdatedAt(),
-                0L  // 직원 연동 전까지 임시로 0
+                count
         );
     }
 }

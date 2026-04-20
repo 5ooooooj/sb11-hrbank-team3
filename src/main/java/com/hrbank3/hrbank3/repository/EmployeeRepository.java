@@ -48,4 +48,6 @@ public interface EmployeeRepository extends JpaRepository<Employee, Long>,
 
   long countByHireDateBetweenAndStatus(LocalDate from, LocalDate to, EmployeeStatus status);
 
+  long countByDepartmentIdAndStatusNot(Long departmentId, EmployeeStatus status);
+
 }

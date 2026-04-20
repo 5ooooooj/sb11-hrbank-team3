@@ -42,4 +42,10 @@ public interface EmployeeRepository extends JpaRepository<Employee, Long>,
   @Query("SELECT e FROM Employee e LEFT JOIN FETCH e.profileImage")
   Slice<Employee> findAllWithProfileImage(Pageable pageable);
 
+  boolean existsByDepartmentId(Long departmentId);
+
+  long countByStatus(EmployeeStatus status);
+
+  long countByHireDateBetweenAndStatus(LocalDate from, LocalDate to, EmployeeStatus status);
+
 }

@@ -4,8 +4,10 @@ import com.hrbank3.hrbank3.dto.employee.CursorPageResponseDto;
 import com.hrbank3.hrbank3.dto.employee.EmployeeCreateRequest;
 import com.hrbank3.hrbank3.dto.employee.EmployeeDto;
 import com.hrbank3.hrbank3.dto.employee.EmployeeUpdateRequest;
+import com.hrbank3.hrbank3.entity.Department;
 import com.hrbank3.hrbank3.entity.Employee;
 import com.hrbank3.hrbank3.entity.FileMetadata;
+import com.hrbank3.hrbank3.repository.DepartmentRepository;
 import com.hrbank3.hrbank3.repository.EmployeeRepository;
 import com.hrbank3.hrbank3.repository.condition.EmployeeSearchCondition;
 import java.util.List;
@@ -20,6 +22,7 @@ import org.springframework.web.multipart.MultipartFile;
 public class EmployeeService {
 
   private final EmployeeRepository employeeRepository;
+  private final DepartmentRepository departmentRepository;
   private final FileService fileService;
 
   @Transactional
@@ -28,6 +31,9 @@ public class EmployeeService {
     if (employeeRepository.existsByEmail(request.email())) {
       throw new IllegalArgumentException("이미 사용중인 이메일입니다.");
     }
+
+    Department department = departmentRepository.findById(request.departmentId())
+        .orElseThrow(() -> new NoSuchElementException("존재하지 않는 부서입니다."));
 
     // 파일 존재 여부에 따른 조건부 처리(기본값은 null)
     FileMetadata savedProfileImage = null;
@@ -41,7 +47,7 @@ public class EmployeeService {
       Employee employee = Employee.create(
           request.name(),
           request.email(),
-          request.departmentId(),
+          department, // Long -> Department 객체로 변경
           request.position(),
           request.hireDate(),
           savedProfileImage
@@ -107,10 +113,13 @@ public class EmployeeService {
       throw new IllegalArgumentException("이미 사용중인 이메일입니다.");
     }
 
+    Department department = departmentRepository.findById(request.departmentId())
+        .orElseThrow(() -> new NoSuchElementException("존재하지 않는 부서입니다."));
+
     employee.update(
         request.name(),
         request.email(),
-        request.departmentId(),
+        department,
         request.position(),
         request.hireDate(),
         request.status()
@@ -150,8 +159,8 @@ public class EmployeeService {
         employee.getName(),
         employee.getEmail(),
         employee.getEmployeeNumber(),
-        employee.getDepartmentId(),
-        null, // 부서이름은 부서 엔티티 연동 후 추가
+        employee.getDepartment().getId(), // departmentId
+        employee.getDepartment().getName(), // 부서이름은 부서 엔티티 연동 후 추가
         employee.getPosition(),
         employee.getHireDate(),
         employee.getStatus(),

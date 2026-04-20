@@ -1,12 +1,19 @@
 package com.hrbank3.hrbank3.controller;
 
+import com.hrbank3.hrbank3.dto.employee.CursorPageResponseDto;
 import com.hrbank3.hrbank3.dto.employee.EmployeeCreateRequest;
 import com.hrbank3.hrbank3.dto.employee.EmployeeDto;
 import com.hrbank3.hrbank3.dto.employee.EmployeeUpdateRequest;
+import com.hrbank3.hrbank3.entity.enums.EmployeeStatus;
+import com.hrbank3.hrbank3.repository.condition.EmployeeSearchCondition;
 import com.hrbank3.hrbank3.service.EmployeeService;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Content;
 import jakarta.validation.Valid;
+import java.time.LocalDate;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -14,6 +21,7 @@ import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
@@ -29,33 +37,58 @@ public class EmployeeController {
   private final EmployeeService employeeService;
 
   @Operation(summary = "직원 등록")
-  @PostMapping(consumes = "multipart/form-data")
+  @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
   //employee 객체와 profile 파일 같이 보내야하는데, 파일이 포함된 요청은 multipart/form-data 써야함
   public ResponseEntity<EmployeeDto> create(
-      @RequestPart("employee")
+      @RequestPart(value = "employee")
+      @Parameter(content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE))
       @Valid EmployeeCreateRequest request,
       @RequestPart(value = "profile", required = false) MultipartFile profile
   ) {
-    EmployeeDto response = employeeService.create(request);
+    EmployeeDto response = employeeService.create(request, profile);
     return ResponseEntity.status(HttpStatus.CREATED).body(response);
   }
 
-  @Operation(summary = "직원 상세 조회")
+  @Operation(summary = "직원 목록 조회")
   @GetMapping
+  public ResponseEntity<CursorPageResponseDto<EmployeeDto>> findAll(
+      @RequestParam(required = false) String nameOrEmail,
+      @RequestParam(required = false) String employeeNumber,
+      @RequestParam(required = false) String departmentName,
+      @RequestParam(required = false) String position,
+      @RequestParam(required = false) LocalDate hireDateFrom,
+      @RequestParam(required = false) LocalDate hireDateTo,
+      @RequestParam(required = false) EmployeeStatus status,
+      @RequestParam(required = false) Long idAfter,
+      @RequestParam(required = false) String cursor,
+      @RequestParam(defaultValue = "10") int size,
+      @RequestParam(defaultValue = "name") String sortField,
+      @RequestParam(defaultValue = "asc") String sortDirection
+  ) {
+    EmployeeSearchCondition condition = new EmployeeSearchCondition(
+        nameOrEmail, employeeNumber, departmentName, position,
+        hireDateFrom, hireDateTo, status, idAfter, cursor,
+        size, sortField, sortDirection
+    );
+    return ResponseEntity.ok(employeeService.findAll(condition));
+  }
+
+  @Operation(summary = "직원 상세 조회")
+  @GetMapping(value = "/{id}")
   public ResponseEntity<EmployeeDto> findById(@PathVariable Long id) {
     EmployeeDto response = employeeService.findById(id);
     return ResponseEntity.ok(response);
   }
 
   @Operation(summary = "직원 수정")
-  @PatchMapping(value = "/{id}", consumes = "multipart/form-data")
+  @PatchMapping(value = "/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
   public ResponseEntity<EmployeeDto> update(
       @PathVariable Long id,
       @RequestPart("employee")
       @Valid EmployeeUpdateRequest request,
       @RequestPart(value = "profile", required = false) MultipartFile profile
   ) {
-    EmployeeDto response = employeeService.update(id, request);
+    EmployeeDto response = employeeService.update(id, request, profile);
     return ResponseEntity.ok(response);
   }
 

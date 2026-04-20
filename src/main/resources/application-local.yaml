@@ -23,3 +23,7 @@ spring:
       file:
         upload:
           path: ./uploads/
+
+backup:
+  schedule:
+    cron: "-" # 로컬에선 스케줄러 주기 비활성화

@@ -7,6 +7,8 @@ import com.hrbank3.hrbank3.entity.enums.EmployeeStatus;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.util.List;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Slice;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
@@ -34,4 +36,10 @@ public interface EmployeeRepository extends JpaRepository<Employee, Long>,
           +
           "FROM Employee e WHERE e.status != 'RESIGNED' GROUP BY e.position ORDER BY COUNT(e) DESC")
   List<PositionDistributionDto> findPositionDistribution();
+
+  // 백업 히스토리서비스에서 csv 청크 조회시 n+1 발생 -> 프로필 이미지로 직원 찾는 메서드 추가
+  // 레프트 조인으로 없어도 전체 직원 조회, 정렬은 서비스에서
+  @Query("SELECT e FROM Employee e LEFT JOIN FETCH e.profileImage")
+  Slice<Employee> findAllWithProfileImage(Pageable pageable);
+
 }

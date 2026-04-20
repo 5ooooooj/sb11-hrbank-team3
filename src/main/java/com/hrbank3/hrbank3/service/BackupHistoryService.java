@@ -143,7 +143,7 @@ public class BackupHistoryService {
       boolean hasNext = true;
 
       while (hasNext) {
-        Slice<Employee> slice = employeeRepository.findAll(
+        Slice<Employee> slice = employeeRepository.findAllWithProfileImage(
             PageRequest.of(page, chunkSize, Sort.by("id").ascending())
         );
 
@@ -201,7 +201,7 @@ public class BackupHistoryService {
         escapeCsv(emp.getPosition()),
         emp.getHireDate().toString(),
         emp.getStatus().name(),
-        emp.getProfileImageId() != null ? String.valueOf(emp.getProfileImageId()) : ""
+        emp.getProfileImage() != null ? String.valueOf(emp.getProfileImage().getId()) : ""
     );
   }
 

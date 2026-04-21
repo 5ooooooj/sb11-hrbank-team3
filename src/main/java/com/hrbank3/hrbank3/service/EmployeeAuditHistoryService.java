@@ -23,6 +23,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.event.TransactionalEventListener;
 import org.springframework.util.StringUtils;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 
 @Service
 @RequiredArgsConstructor
@@ -163,5 +165,16 @@ public class EmployeeAuditHistoryService {
   // 데이터 전달용 임시 레코드
   private record EmployeeInfo(String name, Long profileImageId) {
 
+  }
+
+  @Transactional(readOnly = true)
+  public long getCount(Instant fromDate, Instant toDate) {
+    if (fromDate == null) {
+      fromDate = Instant.now().minus(7, ChronoUnit.DAYS);
+    }
+    if (toDate == null) {
+      toDate = Instant.now();
+    }
+    return auditRepository.countByCreatedAtBetween(fromDate, toDate);
   }
 }

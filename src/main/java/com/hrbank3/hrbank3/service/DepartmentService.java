@@ -69,9 +69,10 @@ public class DepartmentService {
       String sortField,
       String sortDirection,
       Long idAfter,
+      String cursor,
       int size) {
     return departmentRepository.findAllWithCursor(
-        nameOrDescription, sortField, sortDirection, idAfter, size);
+        nameOrDescription, sortField, sortDirection, idAfter,cursor, size);
   }
 
   // 부서 단건 조회

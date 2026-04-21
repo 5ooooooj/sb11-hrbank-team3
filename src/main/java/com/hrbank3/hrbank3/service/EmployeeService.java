@@ -205,13 +205,14 @@ public class EmployeeService {
     }
     Map<String, Object> data = new HashMap<>();
 
-    data.put("name", employee.getName());
-    data.put("email", employee.getEmail());
-    data.put("departmentId",
-        employee.getDepartment() != null ? String.valueOf(employee.getDepartment().getId()) : null);
-    data.put("position", employee.getPosition());
-    data.put("status", employee.getStatus() != null ? employee.getStatus().name() : null);
     data.put("hireDate", employee.getHireDate() != null ? employee.getHireDate().toString() : null);
+    data.put("name", employee.getName());
+    data.put("position", employee.getPosition());
+    data.put("department",
+        employee.getDepartment() != null ? employee.getDepartment().getName() : null);
+    data.put("email", employee.getEmail());
+    data.put("employeeNumber", employee.getEmployeeNumber());
+    data.put("status", employee.getStatus() != null ? employee.getStatus().name() : null);
     data.put("profileImageId",
         employee.getProfileImage() != null ? String.valueOf(employee.getProfileImage().getId())
             : null);

@@ -30,8 +30,8 @@ public class Department {
   @Column(nullable = false)
   private LocalDate establishedDate;
 
-  @Column(nullable = false, length = 255)
-  private String departmentEmail;
+  @Column(length = 255)
+  private String departmentMail;
 
   @CreatedDate
   @Column(nullable = false, updatable = false)
@@ -43,19 +43,19 @@ public class Department {
 
   // 생성 전용 생성자
   public Department(String name, String description, LocalDate establishedDate,
-      String departmentEmail) {
+      String departmentMail) {
     this.name = name;
     this.description = description;
     this.establishedDate = establishedDate;
-    this.departmentEmail = departmentEmail;
+    this.departmentMail = departmentMail;
   }
 
   // 수정 전용 메서드
   public void update(String name, String description, LocalDate establishedDate,
-      String departmentEmail) {
+      String departmentMail) {
     this.name = name;
     this.description = description;
     this.establishedDate = establishedDate;
-    this.departmentEmail = departmentEmail;
+    this.departmentMail = departmentMail;
   }
 }

@@ -88,7 +88,7 @@ public class DepartmentRepositoryImpl implements DepartmentRepositoryCustom {
               d.getCreatedAt(),
               d.getUpdatedAt(),
               count != null ? count : 0L,
-              d.getDepartmentEmail()
+              d.getDepartmentMail()
           );
         })
         .collect(Collectors.toList());

@@ -33,7 +33,10 @@ public class NotificationService {
   @Transactional
   public void handleEmployeeNotification(EmployeeNotificationEvent event) {
     Department department = event.employee().getDepartment();
-    String recipientEmail = adminEmail;
+    // null 체크 추가
+    String recipientEmail = department.getDepartmentMail() != null
+        ? department.getDepartmentMail()
+        : adminEmail;
     String subject = event.eventType();
     String content = buildEmployeeContent(event);
 

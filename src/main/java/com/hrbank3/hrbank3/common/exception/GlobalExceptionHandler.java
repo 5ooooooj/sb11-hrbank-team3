@@ -38,6 +38,18 @@ public class GlobalExceptionHandler {
     return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
   }
 
+  // 409 Conflict (중복 백업 시도 등)
+  @ExceptionHandler(IllegalStateException.class)
+  public ResponseEntity<ErrorResponse> handleIllegalState(IllegalStateException e, HttpServletRequest request) {
+    ErrorResponse response = ErrorResponse.of(
+        HttpStatus.CONFLICT.value(),
+        e.getMessage(),
+        request.getRequestURI()
+    );
+    return ResponseEntity.status(HttpStatus.CONFLICT).body(response);
+  }
+
+
   // 나머지 모든 서버 에러 500 Internal Server Error
   @ExceptionHandler(Exception.class)
   public ResponseEntity<ErrorResponse> handleException(Exception e, HttpServletRequest request) {

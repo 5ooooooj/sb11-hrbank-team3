@@ -115,8 +115,8 @@ public class NotificationService {
     sb.append("시작 시각: ").append(event.startedAt()).append("\n");
     sb.append("완료(실패) 시각: ").append(event.endedAt()).append("\n");
 
-    if (event.eroorMessage() != null) {
-      sb.append("원인: ").append(event.eroorMessage());
+    if (event.errorMessage() != null) {
+      sb.append("원인: ").append(event.errorMessage());
     }
 
     return sb.toString();

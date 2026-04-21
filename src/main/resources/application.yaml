@@ -30,3 +30,12 @@ backup:
 
     notification:
       admin-email: ${NOTIFICATION_ADMIN_EMAIL:admin@hrbank.com}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health
+  endpoint:
+    health:
+      show-details: never

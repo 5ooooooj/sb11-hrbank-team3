@@ -1,0 +1,18 @@
+[build]
+builder = "dockerfile"
+dockerfilePath = "Dockerfile"
+
+[deploy]
+startCommand = "java -Djava.security.egd=file:/dev/./urandom -Dspring.profiles.active=prod -jar app.jar"
+healthcheckPath = "/actuator/health"
+healthcheckTimeout = 60
+restartPolicyType = "on_failure"
+
+[[services]]
+name = "hrbank3"
+
+[vars]
+# 백업 디렉토리 경로 명시
+BACKUP_DIR = "/app/backups"
+# 파일 업로드 경로 명시
+FILE_UPLOAD_PATH = "/app/uploads"

@@ -1,5 +1,6 @@
 package com.hrbank3.hrbank3.controller;
 
+import com.hrbank3.hrbank3.common.util.IpExtractUtil;
 import com.hrbank3.hrbank3.dto.backupHistory.BackupHistoryDto;
 import com.hrbank3.hrbank3.dto.backupHistory.CursorPageResponseBackupDto;
 import com.hrbank3.hrbank3.entity.enums.BackupHistorySortType;
@@ -29,14 +30,6 @@ import org.springframework.web.bind.annotation.RestController;
 public class BackupHistoryController {
 
   private final BackupHistoryService backupHistoryService;
-
-  private static final String[] IP_HEADERS = {
-      "X-Forwarded-For",
-      "Proxy-Client-IP",
-      "WL-Proxy-Client-IP",
-      "HTTP_CLIENT_IP",
-      "HTTP_X_FORWARDED_FOR"
-  };
 
   @Operation(summary = "최근 백업 정보 조회", description = "지정된 상태의 가장 최근 백업 정보를 조회합니다. 상태를 지정하지 않으면 성공적으로 완료된(COMPLETED) 백업을 반환합니다.")
   @GetMapping("/latest")
@@ -98,30 +91,7 @@ public class BackupHistoryController {
   })
   @PostMapping
   public ResponseEntity<BackupHistoryDto> createBackup(HttpServletRequest request) {
-    String worker = extractClientIp(request);
+    String worker = IpExtractUtil.getClientIp(request);
     return ResponseEntity.ok(backupHistoryService.backup(worker));
-  }
-
-  // IP 추출 메서드
-  private String extractClientIp(HttpServletRequest request) {
-    String ip = null;
-    for (String header : IP_HEADERS) {
-      ip = request.getHeader(header);
-      if (ip != null && !ip.isBlank() && !"unknown".equalsIgnoreCase(ip)) {
-        break;
-      }
-    }
-
-    if (ip == null || ip.isBlank() || "unknown".equalsIgnoreCase(ip)) {
-      ip = request.getRemoteAddr();
-    }
-
-    // x-Forwarded-For 헤더는 프록시를 거칠 때마다 IP를 뒤에 추가하는 방식
-    // 첫번째 IP가 실제 클라이언트일 가능성이 높음
-    if (ip.contains(",")) {
-      ip = ip.split(",")[0].trim();
-    }
-
-    return ip;
   }
 }

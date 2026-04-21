@@ -8,4 +8,6 @@ public interface EmployeeAuditHistoryRepository extends JpaRepository<EmployeeAu
 
     // 특정 시간 이후 생성된 수정 이력 건수 - 대시보드에서 사용
     long countByCreatedAtAfter(Instant createdAt);
+
+    long countByCreatedAtBetween(Instant from, Instant to);
 }

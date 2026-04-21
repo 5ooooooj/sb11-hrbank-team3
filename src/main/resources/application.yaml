@@ -2,7 +2,7 @@ spring:
   application:
     name: hrbank3
   profiles:
-    active: prod
+    active: local
   mvc:
     format:
       date-time: iso # 프론트 파싱을 위한 설정 -> 테스트 필요
@@ -27,6 +27,9 @@ backup:
   chunk-size: 500
   schedule:
     cron: "0 0 * * * *" # 매 시 정각에 하도록 세팅
+
+    notification:
+      admin-email: ${NOTIFICATION_ADMIN_EMAIL:admin@hrbank.com}
 
 management:
   endpoints:

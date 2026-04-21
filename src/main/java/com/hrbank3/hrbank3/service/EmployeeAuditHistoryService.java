@@ -12,6 +12,8 @@ import com.hrbank3.hrbank3.repository.EmployeeAuditHistoryRepository;
 import com.hrbank3.hrbank3.repository.EmployeeRepository;
 import com.hrbank3.hrbank3.repository.condition.ChangeLogSearchCondition;
 import com.hrbank3.hrbank3.repository.custom.EmployeeAuditHistoryRepositoryCustom;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -19,12 +21,10 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.transaction.event.TransactionalEventListener;
 import org.springframework.util.StringUtils;
-import java.time.Instant;
-import java.time.temporal.ChronoUnit;
 
 @Service
 @RequiredArgsConstructor
@@ -36,7 +36,7 @@ public class EmployeeAuditHistoryService {
 
   // 직원 정보 수정 시 발생하는 핸들링
   @Transactional
-  @TransactionalEventListener
+  @EventListener
   public void recordAuditHistory(EmployeeAuditEvent event) {
     Map<String, Object> changedContent = extractDiff(event.beforeData(), event.afterData());
 

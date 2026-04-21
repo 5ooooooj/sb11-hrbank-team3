@@ -7,11 +7,15 @@ import com.hrbank3.hrbank3.dto.employee.EmployeeUpdateRequest;
 import com.hrbank3.hrbank3.entity.Department;
 import com.hrbank3.hrbank3.entity.Employee;
 import com.hrbank3.hrbank3.entity.FileMetadata;
+import com.hrbank3.hrbank3.entity.enums.AuditType;
+import com.hrbank3.hrbank3.event.EmployeeAuditEvent;
 import com.hrbank3.hrbank3.event.EmployeeNotificationEvent;
 import com.hrbank3.hrbank3.repository.DepartmentRepository;
 import com.hrbank3.hrbank3.repository.EmployeeRepository;
 import com.hrbank3.hrbank3.repository.condition.EmployeeSearchCondition;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.NoSuchElementException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.ApplicationEventPublisher;
@@ -58,10 +62,18 @@ public class EmployeeService {
       );
 
       Employee savedEmployee = employeeRepository.save(employee);
+
+      // 알림 이벤트 발행
       eventPublisher.publishEvent(new EmployeeNotificationEvent("EMPLOYEE_CREATE", savedEmployee));
 
-      // TODO: EmployeeAuditHistory 머지 후 이력 저장 연동 필요
-      // AuditType.CREATED, targetEmployeeNo = savedEmployee.getEmployeeNumber()
+      // 수정 이력 저장 이벤트 발행
+      eventPublisher.publishEvent(new EmployeeAuditEvent(
+          AuditType.CREATED,
+          savedEmployee.getEmployeeNumber(),
+          new HashMap<>(), // Before: 없음
+          extractEmployeeData(savedEmployee), // After: 변경 내역
+          "신규 직원 등록"
+      ));
 
       return toDto(savedEmployee);
     } catch (Exception e) {
@@ -121,6 +133,9 @@ public class EmployeeService {
     Department department = departmentRepository.findById(request.departmentId())
         .orElseThrow(() -> new NoSuchElementException("존재하지 않는 부서입니다."));
 
+    // 수정 이력 저장을 위한 수정 전 스냅샷
+    Map<String, Object> beforeData = extractEmployeeData(employee);
+
     employee.update(
         request.name(),
         request.email(),
@@ -143,6 +158,15 @@ public class EmployeeService {
       employee.updateProfileImage(savedNewImage);
     }
 
+    // 수정 이력 저장 이벤트 발행
+    eventPublisher.publishEvent(new EmployeeAuditEvent(
+        AuditType.UPDATED,
+        employee.getEmployeeNumber(),
+        beforeData,                     // Before: 미리 찍어둔 스냅샷
+        extractEmployeeData(employee),  // After: 수정이 완료된 상태
+        "직원 정보 수정"
+    ));
+
     return toDto(employee);
   }
 
@@ -151,6 +175,10 @@ public class EmployeeService {
     Employee employee = employeeRepository.findById(id)
         .orElseThrow(() -> new NoSuchElementException("직원을 찾을 수 없습니다."));
 
+    // 수정 이력 저장을 위한 삭제 전 스냅샷
+    Map<String, Object> beforeData = extractEmployeeData(employee);
+
+    // 알림 이벤트 발행
     eventPublisher.publishEvent(new EmployeeNotificationEvent("EMPLOYEE_DELETE", employee));
 
     if (employee.getProfileImage() != null) {
@@ -158,6 +186,37 @@ public class EmployeeService {
     }
 
     employeeRepository.delete(employee);
+
+    // 수정 이력 저장 이벤트 발행
+
+    eventPublisher.publishEvent(new EmployeeAuditEvent(
+        AuditType.DELETED,
+        employee.getEmployeeNumber(),
+        beforeData,       // Before: 삭제 전 데이터
+        new HashMap<>(),  // After: 없음
+        "직원 영구 삭제"
+    ));
+  }
+
+  // 엔티티의 현재 상태 스냅샷 저장
+  private Map<String, Object> extractEmployeeData(Employee employee) {
+    if (employee == null) {
+      return new HashMap<>();
+    }
+    Map<String, Object> data = new HashMap<>();
+
+    data.put("name", employee.getName());
+    data.put("email", employee.getEmail());
+    data.put("departmentId",
+        employee.getDepartment() != null ? String.valueOf(employee.getDepartment().getId()) : null);
+    data.put("position", employee.getPosition());
+    data.put("status", employee.getStatus() != null ? employee.getStatus().name() : null);
+    data.put("hireDate", employee.getHireDate() != null ? employee.getHireDate().toString() : null);
+    data.put("profileImageId",
+        employee.getProfileImage() != null ? String.valueOf(employee.getProfileImage().getId())
+            : null);
+    return data;
+
   }
 
   private EmployeeDto toDto(Employee employee) {
@@ -174,6 +233,5 @@ public class EmployeeService {
         employee.getProfileImage() != null ? employee.getProfileImage().getId() : null
     );
   }
-
 
 }

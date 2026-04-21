@@ -7,12 +7,14 @@ import com.hrbank3.hrbank3.dto.employee.EmployeeUpdateRequest;
 import com.hrbank3.hrbank3.entity.Department;
 import com.hrbank3.hrbank3.entity.Employee;
 import com.hrbank3.hrbank3.entity.FileMetadata;
+import com.hrbank3.hrbank3.event.EmployeeNotificationEvent;
 import com.hrbank3.hrbank3.repository.DepartmentRepository;
 import com.hrbank3.hrbank3.repository.EmployeeRepository;
 import com.hrbank3.hrbank3.repository.condition.EmployeeSearchCondition;
 import java.util.List;
 import java.util.NoSuchElementException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -24,6 +26,8 @@ public class EmployeeService {
   private final EmployeeRepository employeeRepository;
   private final DepartmentRepository departmentRepository;
   private final FileService fileService;
+
+  private final ApplicationEventPublisher eventPublisher;
 
   @Transactional
   public EmployeeDto create(EmployeeCreateRequest request, MultipartFile profileImage) {
@@ -54,6 +58,7 @@ public class EmployeeService {
       );
 
       Employee savedEmployee = employeeRepository.save(employee);
+      eventPublisher.publishEvent(new EmployeeNotificationEvent("EMPLOYEE_CREATE", savedEmployee));
 
       // TODO: EmployeeAuditHistory 머지 후 이력 저장 연동 필요
       // AuditType.CREATED, targetEmployeeNo = savedEmployee.getEmployeeNumber()
@@ -145,6 +150,8 @@ public class EmployeeService {
   public void delete(Long id) {
     Employee employee = employeeRepository.findById(id)
         .orElseThrow(() -> new NoSuchElementException("직원을 찾을 수 없습니다."));
+
+    eventPublisher.publishEvent(new EmployeeNotificationEvent("EMPLOYEE_DELETE", employee));
 
     if (employee.getProfileImage() != null) {
       fileService.deletePhysicalFile(employee.getProfileImage().getStoragePath());

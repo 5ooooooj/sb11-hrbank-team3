@@ -5,6 +5,7 @@ import com.hrbank3.hrbank3.dto.backupHistory.CursorPageResponseBackupDto;
 import com.hrbank3.hrbank3.entity.Department;
 import com.hrbank3.hrbank3.entity.Employee;
 import com.hrbank3.hrbank3.entity.FileMetadata;
+import com.hrbank3.hrbank3.event.BackupNotificationEvent;
 import com.hrbank3.hrbank3.repository.DepartmentRepository;
 import com.hrbank3.hrbank3.repository.EmployeeRepository;
 import com.hrbank3.hrbank3.entity.BackupHistory;
@@ -29,6 +30,7 @@ import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Slice;
 import org.springframework.data.domain.Sort;
@@ -45,6 +47,7 @@ public class BackupHistoryService {
   private final BackupHistoryMapper backupHistoryMapper;
   private final DepartmentRepository departmentRepository;
   private final BackupHistoryTransaction backupHistoryTransaction;
+  private final ApplicationEventPublisher eventPublisher;
 
   @Value("${backup.dir}")
   private String backupDir;
@@ -106,6 +109,12 @@ public class BackupHistoryService {
       csvPath = writeCsv();
       FileMetadata file = backupHistoryTransaction.saveFileMetadata(csvPath, "text/csv");
       backupHistoryTransaction.complete(history, file);
+      eventPublisher.publishEvent(new BackupNotificationEvent(
+          "BACKUP_SUCCESS",
+          history.getStartedAt(),
+          history.getEndedAt(),
+          null
+      ));
     } catch (Exception e) {
       deleteSilently(csvPath);
       try {
@@ -115,6 +124,12 @@ public class BackupHistoryService {
       } catch (IOException logException) {
         // 로그 저장도 실패 시 파일 없이 FAILED 처리
         backupHistoryTransaction.fail(history, null);
+        eventPublisher.publishEvent(new BackupNotificationEvent(
+            "BACKUP_FAILED",
+            history.getStartedAt(),
+            history.getEndedAt(),
+            e.getMessage()
+        ));
       }
     }
     return backupHistoryMapper.toDto(history);
@@ -222,7 +237,6 @@ public class BackupHistoryService {
       }
     }
   }
-
 
 
 }

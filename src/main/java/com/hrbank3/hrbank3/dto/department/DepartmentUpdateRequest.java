@@ -17,7 +17,7 @@ public record DepartmentUpdateRequest(
 
     @NotBlank(message = "부서 메일은 필수입니다")
     @Email(message = "이메일 형식이 올바르지 않습니다")
-    String departmentEmail
+    String departmentMail
 ) {
 
 }

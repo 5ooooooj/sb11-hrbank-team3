@@ -29,7 +29,7 @@ public class DepartmentService {
         request.name(),
         request.description(),
         request.establishedDate(),
-        request.departmentEmail()
+        request.departmentMail()
     );
     Department saved = departmentRepository.save(department);
     return toDto(saved);
@@ -44,7 +44,7 @@ public class DepartmentService {
       throw new IllegalArgumentException("이미 존재하는 부서 이름입니다: " + request.name());
     }
     department.update(request.name(), request.description(), request.establishedDate(),
-        request.departmentEmail());
+        request.departmentMail());
     return toDto(department);
   }
 
@@ -94,7 +94,7 @@ public class DepartmentService {
         department.getCreatedAt(),
         department.getUpdatedAt(),
         count,
-        department.getDepartmentEmail()
+        department.getDepartmentMail()
     );
   }
 }

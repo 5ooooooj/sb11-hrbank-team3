@@ -25,7 +25,8 @@ public class DepartmentRepositoryImpl implements DepartmentRepositoryCustom {
       String nameOrDescription,
       String sortField,       // sortBy → sortField
       String sortDirection,
-      Long idAfter,           // lastId → idAfter
+      Long idAfter,     // lastId → idAfter
+      String cursor,
       int size) {
 
     QDepartment department = QDepartment.department;

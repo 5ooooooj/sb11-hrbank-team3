@@ -131,27 +131,30 @@ public class EmployeeAuditHistoryService {
             e.getProfileImage() != null ? e.getProfileImage().getId() : null
         ))
         .orElseGet(() -> {
-          String deletedName = diffs.stream()
-              .filter(d -> "name".equals(d.propertyName()))
-              .map(DiffDto::before)
-              .findFirst()
-              .orElse("알 수 없음");
+          if (audit.getAuditType() == AuditType.DELETED) {
+            String recoveredName = diffs.stream()
+                .filter(d -> "name".equals(d.propertyName()))
+                .map(DiffDto::before)
+                .findFirst()
+                .filter(val -> !"-".equals(val) && !"null".equals(val))
+                .orElse(null);
 
-          Long deletedProfileId = diffs.stream()
-              .filter(d -> "profileImageId".equals(d.propertyName()))
-              .map(DiffDto::before)
-              .filter(val -> val != null && !"-".equals(val) && !"null".equals(val)) // 파싱 에러 방지
-              .map(val -> {
-                try {
-                  return Long.parseLong(val);
-                } catch (NumberFormatException ex) {
-                  return null;
-                }
-              })
-              .filter(Objects::nonNull)
-              .findFirst()
-              .orElse(null);
-          return new EmployeeInfo(deletedName, deletedProfileId);
+            Long recoveredProfileId = diffs.stream()
+                .filter(d -> "profileImageId".equals(d.propertyName()))
+                .map(DiffDto::before)
+                .findFirst()
+                .filter(val -> !"-".equals(val) && !"null".equals(val))
+                .map(val -> {
+                  try {
+                    return Long.parseLong(val);
+                  } catch (NumberFormatException ex) {
+                    return null;
+                  }
+                })
+                .orElse(null);
+            return new EmployeeInfo(recoveredName, recoveredProfileId);
+          }
+          return new EmployeeInfo(null, null);
         });
   }
 

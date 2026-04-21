@@ -26,7 +26,6 @@ public record CursorPageResponseBackupDto(
       String cursorBase = switch (sortType) {
         case ENDED_AT_ASC, ENDED_AT_DESC ->
             content.get(content.size() - 1).endedAt().toInstant().toString();
-            .toInstant().toString();
         case STATUS_ASC, STATUS_DESC ->
             content.get(content.size() - 1).status();
         default ->

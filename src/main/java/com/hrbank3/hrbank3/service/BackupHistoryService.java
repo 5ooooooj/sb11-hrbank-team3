@@ -39,7 +39,6 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 public class BackupHistoryService {
 
-  private static final int PAGE_SIZE_OFFSET = 1;
 
   private final BackupHistoryRepository backupHistoryRepository;
   private final EmployeeRepository employeeRepository;

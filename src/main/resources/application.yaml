@@ -11,6 +11,20 @@ spring:
       enabled: true
       max-file-size: 10MB
       max-request-size: 50MB
+  mail:
+    host: sandbox.smtp.mailtrap.io
+    port: 2525
+    username: ${MAIL_USERNAME}
+    password: ${MAIL_PASSWORD}
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+
+  notification:
+    admin-email: ${NOTIFICATION_ADMIN_EMAIL:admin@hrbank.com}
 
 springdoc:
   swagger-ui:
@@ -28,9 +42,6 @@ backup:
   schedule:
     cron: "0 0 * * * *" # 매 시 정각에 하도록 세팅
 
-    notification:
-      admin-email: ${NOTIFICATION_ADMIN_EMAIL:admin@hrbank.com}
-
 management:
   endpoints:
     web:
@@ -39,3 +50,4 @@ management:
   endpoint:
     health:
       show-details: never
+

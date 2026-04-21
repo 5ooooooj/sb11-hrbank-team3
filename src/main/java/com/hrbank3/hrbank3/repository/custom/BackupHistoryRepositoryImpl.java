@@ -89,7 +89,7 @@ public class BackupHistoryRepositoryImpl implements BackupHistoryRepositoryCusto
     // cursor나 lastId가 없으면 첫 페이지이므로 조건 없음
     if (cursor == null || lastId == null) return null;
 
-    // Base64로 인코딩된 cursor를 디코딩해서 Instant로 변환
+    // Base64로 인코딩된 cursor를 디코딩해서 문자열로 변환
     String decodedCursor = new String(Base64.getDecoder().decode(cursor));
 
     return switch (sortType) {
@@ -125,12 +125,12 @@ public class BackupHistoryRepositoryImpl implements BackupHistoryRepositoryCusto
       }
       case STATUS_ASC ->
         // status 값도 cursor에 담아서 비교
-          backupHistory.status.stringValue().gt(cursor)
-          .or(backupHistory.status.stringValue().eq(cursor)
+          backupHistory.status.stringValue().gt(decodedCursor)
+          .or(backupHistory.status.stringValue().eq(decodedCursor)
               .and(backupHistory.id.gt(lastId)));
       case STATUS_DESC
-          -> backupHistory.status.stringValue().lt(cursor)
-          .or(backupHistory.status.stringValue().eq(cursor)
+          -> backupHistory.status.stringValue().lt(decodedCursor)
+          .or(backupHistory.status.stringValue().eq(decodedCursor)
               .and(backupHistory.id.lt(lastId)));
     };
   }

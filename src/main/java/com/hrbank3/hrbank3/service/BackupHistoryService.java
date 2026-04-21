@@ -59,9 +59,9 @@ public class BackupHistoryService {
     // hasNext 판단을 위해 pageSize + 1개 조회
     List<BackupHistory> histories = backupHistoryRepository.findAllByCondition(condition);
 
-    boolean hasNext = histories.size() == condition.getPageSize();
+    boolean hasNext = histories.size() > condition.getPageSize();
     if (hasNext) {
-      histories = histories.subList(0, histories.size() - PAGE_SIZE_OFFSET);
+      histories = histories.subList(0, condition.getPageSize());
     }
 
     List<BackupHistoryDto> content = histories.stream()

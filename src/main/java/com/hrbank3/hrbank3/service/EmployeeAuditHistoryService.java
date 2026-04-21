@@ -22,6 +22,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
 
 @Service
 @RequiredArgsConstructor
@@ -32,7 +33,6 @@ public class EmployeeAuditHistoryService {
   private final EmployeeRepository employeeRepository;
 
   // 직원 정보 수정 시 발생하는 핸들링
-
   @Transactional
   @EventListener
   public void recordAuditHistory(EmployeeAuditEvent event) {
@@ -79,6 +79,8 @@ public class EmployeeAuditHistoryService {
 
   @Transactional(readOnly = true)
   public CursorPageResponseDto<ChangeLogDto> findAll(ChangeLogSearchCondition condition) {
+    validatePaginationParams(condition.getCursor(), condition.getIdAfter());
+
     return customAuditRepository.findAllWithCursor(condition);
   }
 
@@ -148,6 +150,13 @@ public class EmployeeAuditHistoryService {
               .orElse(null);
           return new EmployeeInfo(deletedName, deletedProfileId);
         });
+  }
+
+  private void validatePaginationParams(String cursor, Long idAfter) {
+    if ((StringUtils.hasText(cursor) && idAfter == null) ||
+        (!StringUtils.hasText(cursor) && idAfter != null)) {
+      throw new IllegalArgumentException("cursor와 idAfter는 반드시 함께 사용되어야 합니다.");
+    }
   }
 
   // 데이터 전달용 임시 레코드

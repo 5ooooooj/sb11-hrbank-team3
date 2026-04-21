@@ -125,10 +125,6 @@ public class EmployeeAuditHistoryRepositoryImpl implements EmployeeAuditHistoryR
   // 동적 커서 비교 로직
   private BooleanExpression cursorCondition(String cursor, Long lastId, String sortField,
       String sortDirection) {
-    if ((StringUtils.hasText(cursor) && lastId == null) ||
-        (!StringUtils.hasText(cursor) && lastId != null)) {
-      throw new IllegalArgumentException("cursor와 idAfter는 반드시 함께 사용되어야 합니다.");
-    }
 
     if (!StringUtils.hasText(cursor) || lastId == null) {
       return null;

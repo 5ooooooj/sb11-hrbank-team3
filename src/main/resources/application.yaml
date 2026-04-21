@@ -27,6 +27,9 @@ backup:
   chunk-size: 500
   schedule:
     cron: "0 0 * * * *" # 매 시 정각에 하도록 세팅
+    
+    notification:
+      admin-email: ${NOTIFICATION_ADMIN_EMAIL:admin@hrbank.com}
 
 management:
   endpoints:
@@ -36,3 +39,4 @@ management:
   endpoint:
     health:
       show-details: never
+

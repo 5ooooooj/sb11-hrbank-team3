@@ -15,15 +15,6 @@ spring:
     port: 2525
     username: ${MAIL_USERNAME}
     password: ${MAIL_PASSWORD}
-    properties:
-      mail:
-        smtp:
-          auth: true
-          starttls:
-            enable: true
-
-  notification:
-    admin-email: ${NOTIFICATION_ADMIN_EMAIL:admin@hrbank.com}
 
 
 logging:

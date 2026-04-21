@@ -25,8 +25,7 @@ public record CursorPageResponseBackupDto(
       // 정렬 기준에 따라 커서에 인코딩할 값 결정
       String cursorBase = switch (sortType) {
         case ENDED_AT_ASC, ENDED_AT_DESC ->
-            content.get(content.size() - 1).endedAt()
-            .toInstant().toString();
+            content.get(content.size() - 1).endedAt().toInstant().toString();
         case STATUS_ASC, STATUS_DESC ->
             content.get(content.size() - 1).status();
         default ->

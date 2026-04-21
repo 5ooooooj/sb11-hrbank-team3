@@ -25,11 +25,10 @@ public class Notification {
   @Column(nullable = false)
   private String eventType;
 
-  @Column(name = "department_id")
-  private Long departmentId;
+  @ManyToOne(fetch = FetchType.LAZY)
+  @JoinColumn(name = "department_id")
+  private Department department;
 
-  // TODO: 하빈님 department_mail 컬럼 추가 후 연동 필요
-  // 현재는 하드코딩, 추후 department.mail로 교체 예정
   @Column(nullable = false)
   private String recipientEmail;
 
@@ -48,12 +47,11 @@ public class Notification {
   @Column(nullable = false)
   private Instant updatedAt;
 
-  @Builder
-  public static Notification create(String eventType, Long departmentId, String recipientEmail,
+  public static Notification create(String eventType, Department department, String recipientEmail,
       String content, NotificationStatus status) {
     Notification notification = new Notification();
     notification.eventType = eventType;
-    notification.departmentId = departmentId;
+    notification.department = department;
     notification.recipientEmail = recipientEmail;
     notification.content = content;
     notification.status = status;

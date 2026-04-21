@@ -67,8 +67,9 @@ public class EmployeeAuditHistoryService {
     }
 
     for (String key : allKeys) {
-      Object before = beforeData != null ? beforeData.get(key) : "-";
-      Object after = afterData != null ? afterData.get(key) : "-";
+      Object before =
+          (beforeData != null && beforeData.get(key) != null) ? beforeData.get(key) : "-";
+      Object after = (afterData != null && afterData.get(key) != null) ? afterData.get(key) : "-";
 
       if (!Objects.equals(before, after)) {
         diffMap.put(key, Map.of("before", before, "after", after));

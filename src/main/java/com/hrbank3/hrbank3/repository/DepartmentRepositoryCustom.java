@@ -10,6 +10,7 @@ public interface DepartmentRepositoryCustom {
             String sortField,
             String sortDirection,
             Long idAfter,
+            String cursor,  // 추가
             int size
     );
 }

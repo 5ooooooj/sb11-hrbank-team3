@@ -17,38 +17,45 @@ import java.time.LocalDateTime;
 @EntityListeners(AuditingEntityListener.class)
 public class Department {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+  @Id
+  @GeneratedValue(strategy = GenerationType.IDENTITY)
+  private Long id;
 
-    @Column(nullable = false, unique = true, length = 100)
-    private String name;
+  @Column(nullable = false, unique = true, length = 100)
+  private String name;
 
-    @Column(length = 255)
-    private String description;
+  @Column(length = 255)
+  private String description;
 
-    @Column(nullable = false)
-    private LocalDate establishedDate;
+  @Column(nullable = false)
+  private LocalDate establishedDate;
 
-    @CreatedDate
-    @Column(nullable = false, updatable = false)
-    private LocalDateTime createdAt;
+  @Column(nullable = false, length = 255)
+  private String departmentEmail;
 
-    @LastModifiedDate
-    @Column(nullable = false)
-    private LocalDateTime updatedAt;
+  @CreatedDate
+  @Column(nullable = false, updatable = false)
+  private LocalDateTime createdAt;
 
-    // 생성 전용 생성자
-    public Department(String name, String description, LocalDate establishedDate) {
-        this.name = name;
-        this.description = description;
-        this.establishedDate = establishedDate;
-    }
+  @LastModifiedDate
+  @Column(nullable = false)
+  private LocalDateTime updatedAt;
 
-    // 수정 전용 메서드
-    public void update(String name, String description, LocalDate establishedDate) {
-        this.name = name;
-        this.description = description;
-        this.establishedDate = establishedDate;
-    }
+  // 생성 전용 생성자
+  public Department(String name, String description, LocalDate establishedDate,
+      String departmentEmail) {
+    this.name = name;
+    this.description = description;
+    this.establishedDate = establishedDate;
+    this.departmentEmail = departmentEmail;
+  }
+
+  // 수정 전용 메서드
+  public void update(String name, String description, LocalDate establishedDate,
+      String departmentEmail) {
+    this.name = name;
+    this.description = description;
+    this.establishedDate = establishedDate;
+    this.departmentEmail = departmentEmail;
+  }
 }

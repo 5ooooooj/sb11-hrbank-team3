@@ -7,18 +7,21 @@ services:
       SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/hrbank
       SPRING_DATASOURCE_USERNAME: hrbank
       SPRING_DATASOURCE_PASSWORD: hrbank
-      SPRING_JPA_HIBERNATE_DDL_AUTO: update
+      SPRING_JPA_HIBERNATE_DDL_AUTO: validate
       SPRING_PROFILES_ACTIVE: dev
       # 시간대 설정
       TZ: UTC
       JAVA_TOOL_OPTIONS: "-Duser.timezone=UTC"
       # 배치 주기 (1시간)
       APP_BACKUP_SCHEDULE: "0 0 * * * *"
+      BACKUP_DIR: /app/backups
+      FILE_UPLOAD_PATH: /app/uploads
     depends_on:
       db:
         condition: service_healthy
     volumes:
       - backup-data:/app/backups
+      - upload-data:/app/uploads
 
   db:
     image: postgres:16-alpine
@@ -39,3 +42,4 @@ services:
 volumes:
   pg-data:
   backup-data:
+  upload-data:

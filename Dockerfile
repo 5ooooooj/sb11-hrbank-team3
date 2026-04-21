@@ -16,8 +16,8 @@ WORKDIR /app
 
 COPY --from=builder /app/build/libs/*.jar app.jar
 
-# 백업 파일 저장 디렉토리
-RUN mkdir -p /app/backups /app/logs
+# 파일 저장 디렉토리
+RUN mkdir -p /app/backups /app/uploads /app/logs
 
 EXPOSE 8080
 

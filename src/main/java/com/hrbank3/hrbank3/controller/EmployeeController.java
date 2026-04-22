@@ -71,6 +71,20 @@ public class EmployeeController {
     return ResponseEntity.ok(employeeService.findAll(condition));
   }
 
+  @Operation(summary = "직원 수 조회", description = "지정된 조건에 맞는 직원 수를 조회합니다. 상태 필터링 및 입사일 기간 필터링이 가능합니다.")
+  @GetMapping("/count")
+  public ResponseEntity<Long> getEmployeeCount(
+      @Parameter(description = "직원 상태 (재직중, 휴직중, 퇴사)", schema = @Schema(allowableValues = {"ACTIVE",
+          "ON_LEAVE", "RESIGNED"}))
+      @RequestParam(required = false) EmployeeStatus status,
+      @Parameter(description = "입사일 시작 (지정 시 해당 기간 내 입사한 직원 수 조회, 미지정 시 전체 직원 수 조회)")
+      @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fromDate,
+      @Parameter(description = "입사일 종료 (fromDate와 함께 사용, 기본값: 현재 일시)")
+      @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate toDate
+  ) {
+    return ResponseEntity.ok(dashboardService.getEmployeeCount(status, fromDate, toDate));
+  }
+
   @Operation(summary = "직원 상세 조회")
   @GetMapping("/{id}")
   public ResponseEntity<EmployeeDto> findById(@PathVariable Long id) {
@@ -117,19 +131,5 @@ public class EmployeeController {
       @RequestParam(required = false) EmployeeStatus status
   ) {
     return ResponseEntity.ok(dashboardService.getDistribution(groupBy, status));
-  }
-
-  @Operation(summary = "직원 수 조회", description = "지정된 조건에 맞는 직원 수를 조회합니다. 상태 필터링 및 입사일 기간 필터링이 가능합니다.")
-  @GetMapping("/count")
-  public ResponseEntity<Long> getEmployeeCount(
-      @Parameter(description = "직원 상태 (재직중, 휴직중, 퇴사)", schema = @Schema(allowableValues = {"ACTIVE",
-          "ON_LEAVE", "RESIGNED"}))
-      @RequestParam(required = false) EmployeeStatus status,
-      @Parameter(description = "입사일 시작 (지정 시 해당 기간 내 입사한 직원 수 조회, 미지정 시 전체 직원 수 조회)")
-      @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fromDate,
-      @Parameter(description = "입사일 종료 (fromDate와 함께 사용, 기본값: 현재 일시)")
-      @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate toDate
-  ) {
-    return ResponseEntity.ok(dashboardService.getEmployeeCount(status, fromDate, toDate));
   }
 }

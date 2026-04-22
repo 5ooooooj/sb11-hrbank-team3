@@ -12,6 +12,8 @@ import com.hrbank3.hrbank3.repository.EmployeeAuditHistoryRepository;
 import com.hrbank3.hrbank3.repository.EmployeeRepository;
 import com.hrbank3.hrbank3.repository.condition.ChangeLogSearchCondition;
 import com.hrbank3.hrbank3.repository.custom.EmployeeAuditHistoryRepositoryCustom;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -23,8 +25,6 @@ import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
-import java.time.Instant;
-import java.time.temporal.ChronoUnit;
 
 @Service
 @RequiredArgsConstructor
@@ -69,8 +69,9 @@ public class EmployeeAuditHistoryService {
     }
 
     for (String key : allKeys) {
-      Object before = beforeData != null ? beforeData.get(key) : "-";
-      Object after = afterData != null ? afterData.get(key) : "-";
+      Object before =
+          (beforeData != null && beforeData.get(key) != null) ? beforeData.get(key) : "-";
+      Object after = (afterData != null && afterData.get(key) != null) ? afterData.get(key) : "-";
 
       if (!Objects.equals(before, after)) {
         diffMap.put(key, Map.of("before", before, "after", after));
@@ -130,27 +131,30 @@ public class EmployeeAuditHistoryService {
             e.getProfileImage() != null ? e.getProfileImage().getId() : null
         ))
         .orElseGet(() -> {
-          String deletedName = diffs.stream()
-              .filter(d -> "name".equals(d.propertyName()))
-              .map(DiffDto::before)
-              .findFirst()
-              .orElse("알 수 없음");
+          if (audit.getAuditType() == AuditType.DELETED) {
+            String recoveredName = diffs.stream()
+                .filter(d -> "name".equals(d.propertyName()))
+                .map(DiffDto::before)
+                .findFirst()
+                .filter(val -> !"-".equals(val) && !"null".equals(val))
+                .orElse(null);
 
-          Long deletedProfileId = diffs.stream()
-              .filter(d -> "profileImageId".equals(d.propertyName()))
-              .map(DiffDto::before)
-              .filter(val -> val != null && !"-".equals(val) && !"null".equals(val)) // 파싱 에러 방지
-              .map(val -> {
-                try {
-                  return Long.parseLong(val);
-                } catch (NumberFormatException ex) {
-                  return null;
-                }
-              })
-              .filter(Objects::nonNull)
-              .findFirst()
-              .orElse(null);
-          return new EmployeeInfo(deletedName, deletedProfileId);
+            Long recoveredProfileId = diffs.stream()
+                .filter(d -> "profileImageId".equals(d.propertyName()))
+                .map(DiffDto::before)
+                .findFirst()
+                .filter(val -> !"-".equals(val) && !"null".equals(val))
+                .map(val -> {
+                  try {
+                    return Long.parseLong(val);
+                  } catch (NumberFormatException ex) {
+                    return null;
+                  }
+                })
+                .orElse(null);
+            return new EmployeeInfo(recoveredName, recoveredProfileId);
+          }
+          return new EmployeeInfo(null, null);
         });
   }
 

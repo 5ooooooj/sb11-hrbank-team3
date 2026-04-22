@@ -44,7 +44,7 @@ public class EmployeeController {
       @Valid EmployeeCreateRequest request,
       @RequestPart(value = "profile", required = false) MultipartFile profile
   ) {
-    return ResponseEntity.status(HttpStatus.CREATED).body(employeeService.create(request, profile));
+    return ResponseEntity.ok(employeeService.create(request, profile));
   }
 
   @Operation(summary = "직원 목록 조회")

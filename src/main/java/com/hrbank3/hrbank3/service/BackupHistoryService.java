@@ -26,6 +26,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.UUID;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 
@@ -46,7 +47,7 @@ public class BackupHistoryService {
   private final EmployeeRepository employeeRepository;
   private final BackupHistoryMapper backupHistoryMapper;
   private final DepartmentRepository departmentRepository;
-  private final BackupHistoryTransaction backupHistoryTransaction;
+  private final BackupHistoryPersistence backupHistoryPersistence;
   private final ApplicationEventPublisher eventPublisher;
 
   @Value("${backup.dir}")
@@ -77,21 +78,15 @@ public class BackupHistoryService {
 
   // 최신 백업 조회 메서드
   @Transactional(readOnly = true)
-  public Optional<BackupHistoryDto> getLatestBackup(String status) {
-    BackupStatus backupStatus;
-    try {
-      backupStatus = BackupStatus.valueOf(status.toUpperCase());
-    } catch (IllegalArgumentException e) {
-      throw new IllegalArgumentException("유효하지 않은 상태값입니다: " + status);
-    }
-    return backupHistoryRepository.findTopByStatusOrderByStartedAtDesc(backupStatus)
+  public Optional<BackupHistoryDto> getLatestBackup(BackupStatus status) {
+    return backupHistoryRepository.findTopByStatusOrderByStartedAtDesc(status)
         .map(backupHistoryMapper::toDto);
   }
 
   // 백업 생성 메서드
   public BackupHistoryDto backup(String worker) {
 
-    BackupHistory history = backupHistoryTransaction.initiate(worker); // 내부에 별도 트랜잭션
+    BackupHistory history = backupHistoryPersistence.initiate(worker); // 내부에 별도 트랜잭션
 
     // history가 SKIPPED면 바로 반환
     if (history.getStatus() == BackupStatus.SKIPPED) {
@@ -107,8 +102,8 @@ public class BackupHistoryService {
     Path csvPath = null;
     try {
       csvPath = writeCsv();
-      FileMetadata file = backupHistoryTransaction.saveFileMetadata(csvPath, "text/csv");
-      backupHistoryTransaction.complete(history, file);
+      FileMetadata file = backupHistoryPersistence.saveFileMetadata(csvPath, "text/csv");
+      backupHistoryPersistence.complete(history, file);
       eventPublisher.publishEvent(new BackupNotificationEvent(
           "BACKUP_SUCCESS",
           history.getStartedAt(),
@@ -119,11 +114,11 @@ public class BackupHistoryService {
       deleteSilently(csvPath);
       try {
         Path logPath = writeErrorLog(e);
-        FileMetadata logFile = backupHistoryTransaction.saveFileMetadata(logPath, "text/plain");
-        backupHistoryTransaction.fail(history, logFile);
-      } catch (IOException logException) {
+        FileMetadata logFile = backupHistoryPersistence.saveFileMetadata(logPath, "text/plain");
+        backupHistoryPersistence.fail(history, logFile);
+      } catch (Exception logException) {
         // 로그 저장도 실패 시 파일 없이 FAILED 처리
-        backupHistoryTransaction.fail(history, null);
+        backupHistoryPersistence.fail(history, null);
         eventPublisher.publishEvent(new BackupNotificationEvent(
             "BACKUP_FAILED",
             history.getStartedAt(),
@@ -139,7 +134,8 @@ public class BackupHistoryService {
   private Path writeCsv() throws IOException {
     String fileName = "backup-" + Instant.now()
         .atZone(ZoneOffset.UTC)
-        .format(DateTimeFormatter.ofPattern("yyyyMMddHHmmss"))
+        .format(DateTimeFormatter.ofPattern("yyyyMMddHHmmss-SSS"))
+        + "-" + UUID.randomUUID().toString().substring(0, 8)
         + ".csv";
     Path csvPath = Paths.get(backupDir, fileName);
     Files.createDirectories(csvPath.getParent());
@@ -155,7 +151,7 @@ public class BackupHistoryService {
       boolean hasNext = true;
 
       while (hasNext) {
-        Slice<Employee> slice = employeeRepository.findAllWithProfileImage(
+        Slice<Employee> slice = employeeRepository.findAllFetchProfileImage(
             PageRequest.of(page, chunkSize, Sort.by("id").ascending())
         );
 
@@ -184,22 +180,21 @@ public class BackupHistoryService {
   }
 
   // 에외 메시지와 스택트레이스를 .log 파일로 저장
-  private Path writeErrorLog(Exception e) {
+  private Path writeErrorLog(Exception e) throws IOException {
     String fileName = "backup-error-" + Instant.now()
         .atZone(ZoneOffset.UTC)
-        .format(DateTimeFormatter.ofPattern("yyyyMMddHHmmss"))
+        .format(DateTimeFormatter.ofPattern("yyyyMMddHHmmss-SSS"))
+        + "-" + UUID.randomUUID().toString().substring(0, 8)
         + ".log";
     Path logPath = Paths.get(backupDir, fileName);
 
-    try {
-      Files.createDirectories(logPath.getParent());
-      try (BufferedWriter writer = Files.newBufferedWriter(logPath, StandardCharsets.UTF_8);
-          PrintWriter printWriter = new PrintWriter(writer)) {
+
+    Files.createDirectories(logPath.getParent());
+    try (BufferedWriter writer = Files.newBufferedWriter(logPath, StandardCharsets.UTF_8);
+        PrintWriter printWriter = new PrintWriter(writer)) {
         e.printStackTrace(printWriter); // 전체 스택트레이스 출력
-      }
-    } catch (IOException ioException) {
-      throw new RuntimeException("에러 로그 파일 저장 실패: ", ioException);
     }
+
     return logPath;
   }
 
@@ -222,6 +217,12 @@ public class BackupHistoryService {
     if (value == null) {
       return "";
     }
+
+    // CSV Injection 방버: 위험문자로 시작하면 선행 ' 추가
+    if (!value.isEmpty() && "=+-@\t\r".indexOf(value.charAt(0)) >= 0) {
+      value = "'" + value;
+    }
+
     if (value.contains(",") || value.contains("\"") || value.contains("\n")) {
       return "\"" + value.replace("\"", "\"\"") + "\"";
     }

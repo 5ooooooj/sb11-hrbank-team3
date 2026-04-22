@@ -1,0 +1,45 @@
+services:
+  app:
+    build: .
+    ports:
+      - "8080:8080"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/hrbank
+      SPRING_DATASOURCE_USERNAME: hrbank
+      SPRING_DATASOURCE_PASSWORD: hrbank
+      SPRING_JPA_HIBERNATE_DDL_AUTO: validate
+      SPRING_PROFILES_ACTIVE: dev
+      # 시간대 설정
+      TZ: UTC
+      JAVA_TOOL_OPTIONS: "-Duser.timezone=UTC"
+      # 배치 주기 (1시간)
+      APP_BACKUP_SCHEDULE: "0 0 * * * *"
+      BACKUP_DIR: /app/backups
+      FILE_UPLOAD_PATH: /app/uploads
+    depends_on:
+      db:
+        condition: service_healthy
+    volumes:
+      - backup-data:/app/backups
+      - upload-data:/app/uploads
+
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: hrbank
+      POSTGRES_USER: hrbank
+      POSTGRES_PASSWORD: hrbank
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U hrbank"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    volumes:
+      - pg-data:/var/lib/postgresql/data
+
+volumes:
+  pg-data:
+  backup-data:
+  upload-data:

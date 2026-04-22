@@ -7,4 +7,5 @@ import org.springframework.data.jpa.repository.JpaRepository;
 @Repository
 public interface NotificationRepository extends JpaRepository<Notification, Long> {
 
+  void deleteByDepartmentId(Long departmentId);
 }

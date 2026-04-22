@@ -8,6 +8,7 @@ import com.hrbank3.hrbank3.entity.Department;
 import com.hrbank3.hrbank3.entity.enums.EmployeeStatus;
 import com.hrbank3.hrbank3.repository.DepartmentRepository;
 import com.hrbank3.hrbank3.repository.EmployeeRepository;
+import com.hrbank3.hrbank3.repository.NotificationRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -19,6 +20,7 @@ public class DepartmentService {
 
   private final DepartmentRepository departmentRepository;
   private final EmployeeRepository employeeRepository;
+  private final NotificationRepository notificationRepository;
 
   // 부서 등록
   public DepartmentDto create(DepartmentCreateRequest request) {
@@ -59,6 +61,7 @@ public class DepartmentService {
     if (hasEmployees) {
       throw new IllegalStateException("소속 직원이 있는 부서는 삭제할 수 없습니다.");
     }
+    notificationRepository.deleteByDepartmentId(id);
     departmentRepository.delete(department);
   }
 
@@ -72,7 +75,7 @@ public class DepartmentService {
       String cursor,
       int size) {
     return departmentRepository.findAllWithCursor(
-        nameOrDescription, sortField, sortDirection, idAfter,cursor, size);
+        nameOrDescription, sortField, sortDirection, idAfter, cursor, size);
   }
 
   // 부서 단건 조회

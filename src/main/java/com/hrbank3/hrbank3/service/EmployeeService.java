@@ -188,7 +188,6 @@ public class EmployeeService {
     employeeRepository.delete(employee);
 
     // 수정 이력 저장 이벤트 발행
-
     eventPublisher.publishEvent(new EmployeeAuditEvent(
         AuditType.DELETED,
         employee.getEmployeeNumber(),

@@ -13,6 +13,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
@@ -20,6 +21,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class FileService {
@@ -69,7 +71,9 @@ public class FileService {
 
     // 저장 파일명 생성(UUID - originalName) 및 저장경로 세팅
     String storedName = UUID.randomUUID().toString() + "-" + originalName;
-    String storagePath = uploadPath + storedName;
+    String storagePath = storedName;
+
+    String fullPath = Paths.get(uploadPath).resolve(storedName).toString();
 
     // DB에 저장할 메타데이터 Entity 생성
     FileMetadata fileMetadata = new FileMetadata(
@@ -84,7 +88,7 @@ public class FileService {
     FileMetadata savedFile = fileMetadataRepository.save(fileMetadata);
 
     // 로컬 디스크에 실제 파일 저장
-    File localDisc = new File(storagePath);
+    File localDisc = new File(fullPath);
     try {
       // transferTo() -> 파일 저장 과정에서 발생할 수 있는 I/O관련 예외를 자동으로 처리
       // transferTo()에 상대 경로(./)를 그대로 넘기고 톰캣 임시 폴더(work/Tomcat/...)를 참조하여 FileNotFoundException 발생
@@ -131,8 +135,11 @@ public class FileService {
     }
 
     try {
-      Path filePath = Paths.get(storagePath);
-      Files.deleteIfExists(filePath);
+      Path filePath = Paths.get(uploadPath).resolve(storagePath).normalize();
+      boolean deleted = Files.deleteIfExists(filePath);
+      if(!deleted) {
+        log.warn("삭제할 파일이 존재하지 않습니다: {}", filePath);
+      }
     } catch (IOException e) {
       throw new RuntimeException("물리파일 삭제 중 에러가 발생했습니다." + storagePath, e);
     }

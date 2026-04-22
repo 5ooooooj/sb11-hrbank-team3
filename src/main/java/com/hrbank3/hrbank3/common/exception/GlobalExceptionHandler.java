@@ -61,7 +61,12 @@ public class GlobalExceptionHandler {
   @ExceptionHandler(NoResourceFoundException.class)
   public ResponseEntity<ErrorResponse> handleNoResourceFoundException(
       NoResourceFoundException e, HttpServletRequest request) {
-    log.warn("NoResourceFoundException 발생: 잘못된 URL 요청 - {}", e.getResourcePath());
+    String requestUri = request.getRequestURI();
+
+    if (requestUri.startsWith("/api")) {
+      log.warn("NoResourceFoundException 발생: 잘못된 API URL 요청 - {}", requestUri);
+    }
+
     return ResponseEntity.status(HttpStatus.NOT_FOUND)
         .body(ErrorResponse.of(HttpStatus.NOT_FOUND.value(), "요청하신 리소스를 찾을 수 없습니다.",
             request.getRequestURI()));
@@ -72,7 +77,7 @@ public class GlobalExceptionHandler {
   public ResponseEntity<ErrorResponse> handleMethodArgumentNotValidException(
       org.springframework.web.bind.MethodArgumentNotValidException e, HttpServletRequest request) {
     log.warn("MethodArgumentNotValidException 발생: 유효성 검사 실패");
-    
+
     String errorMessage = e.getBindingResult().getAllErrors().get(0).getDefaultMessage();
 
     return ResponseEntity.status(HttpStatus.BAD_REQUEST)

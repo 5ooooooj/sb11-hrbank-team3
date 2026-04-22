@@ -28,22 +28,32 @@ public class DashboardService {
   // 직원 수 추이 조회
   @Transactional(readOnly = true)
   public List<EmployeeTrendDto> getEmployeeTrend(LocalDate from, LocalDate to, TrendUnit unit) {
-    if (unit == null) unit = TrendUnit.month;
-    if (to == null) to = LocalDate.now();
-    if (from == null) from = getDefaultFrom(to, unit);
+    if (unit == null) {
+      unit = TrendUnit.month;
+    }
+    if (to == null) {
+      to = LocalDate.now();
+    }
+    if (from == null) {
+      from = getDefaultFrom(to, unit);
+    }
 
     List<EmployeeTrendDto> trend = new ArrayList<>();
     LocalDate cursor = from;
 
     while (!cursor.isAfter(to)) {
       LocalDate periodEnd = getPeriodEnd(cursor, unit, to);
-      long count = employeeRepository.countByHireDateLessThanEqualAndStatusNot(periodEnd, EmployeeStatus.RESIGNED);
+      long count = employeeRepository.countByHireDateLessThanEqualAndStatusNot(periodEnd,
+          EmployeeStatus.RESIGNED);
 
-      LocalDate prevPeriodEnd = getPeriodEnd(getPrevPeriodStart(cursor, unit), unit, cursor.minusDays(1));
-      long prevCount = employeeRepository.countByHireDateLessThanEqualAndStatusNot(prevPeriodEnd, EmployeeStatus.RESIGNED);
+      LocalDate prevPeriodEnd = getPeriodEnd(getPrevPeriodStart(cursor, unit), unit,
+          cursor.minusDays(1));
+      long prevCount = employeeRepository.countByHireDateLessThanEqualAndStatusNot(prevPeriodEnd,
+          EmployeeStatus.RESIGNED);
 
       long change = count - prevCount;
-      double changeRate = prevCount == 0 ? 0.0 : Math.round((double) change / prevCount * 1000) / 10.0;
+      double changeRate =
+          prevCount == 0 ? 0.0 : Math.round((double) change / prevCount * 1000) / 10.0;
 
       trend.add(new EmployeeTrendDto(cursor.format(getFormatter(unit)), count, change, changeRate));
       cursor = getNextPeriodStart(cursor, unit);
@@ -54,29 +64,33 @@ public class DashboardService {
   // 직원 분포 조회 (groupBy: department 또는 position)
   @Transactional(readOnly = true)
   public List<EmployeeDistributionDto> getDistribution(String groupBy, EmployeeStatus status) {
-    if (status == null) status = EmployeeStatus.ACTIVE;
-
-    if ("position".equals(groupBy)) {
-      List<PositionDistributionDto> raw = employeeRepository.findPositionDistribution();
-      long total = raw.stream().mapToLong(PositionDistributionDto::employeeCount).sum();
-      return raw.stream()
-              .map(d -> new EmployeeDistributionDto(
-                      d.positionName(),
-                      d.employeeCount(),
-                      total == 0 ? 0.0 : Math.round((double) d.employeeCount() / total * 1000) / 10.0
-              ))
-              .toList();
+    if (status == null) {
+      status = EmployeeStatus.ACTIVE;
     }
 
-    List<DepartmentDistributionDto> raw = departmentRepository.findAllWithEmployeeCount();
+    if ("position".equals(groupBy)) {
+      List<PositionDistributionDto> raw = employeeRepository.findPositionDistribution(
+          EmployeeStatus.RESIGNED);
+      long total = raw.stream().mapToLong(PositionDistributionDto::employeeCount).sum();
+      return raw.stream()
+          .map(d -> new EmployeeDistributionDto(
+              d.positionName(),
+              d.employeeCount(),
+              total == 0 ? 0.0 : Math.round((double) d.employeeCount() / total * 1000) / 10.0
+          ))
+          .toList();
+    }
+
+    List<DepartmentDistributionDto> raw = departmentRepository.findAllWithEmployeeCount(
+        EmployeeStatus.RESIGNED);
     long total = raw.stream().mapToLong(DepartmentDistributionDto::employeeCount).sum();
     return raw.stream()
-            .map(d -> new EmployeeDistributionDto(
-                    d.departmentName(),
-                    d.employeeCount(),
-                    total == 0 ? 0.0 : Math.round((double) d.employeeCount() / total * 1000) / 10.0
-            ))
-            .toList();
+        .map(d -> new EmployeeDistributionDto(
+            d.departmentName(),
+            d.employeeCount(),
+            total == 0 ? 0.0 : Math.round((double) d.employeeCount() / total * 1000) / 10.0
+        ))
+        .toList();
   }
 
   // 직원 수 조회 (status, fromDate, toDate 필터)

@@ -49,6 +49,7 @@ public class EmployeeRepositoryImpl implements EmployeeRepositoryCustom {
     Long count = queryFactory
         .select(employee.count())
         .from(employee)
+        .leftJoin(employee.department) // fetch 없이 join만 추가
         .where(
             nameOrEmailContains(condition.nameOrEmail()),
             employeeNumberContains(condition.employeeNumber()),

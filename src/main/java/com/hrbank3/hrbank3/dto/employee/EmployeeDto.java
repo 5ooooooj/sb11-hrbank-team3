@@ -13,7 +13,8 @@ public record EmployeeDto(
     String position,
     LocalDate hireDate,
     EmployeeStatus status,
-    Long profileImageId
+    Long profileImageId,
+    String profileImageUrl
 ) {
 
 }

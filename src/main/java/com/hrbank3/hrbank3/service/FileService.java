@@ -110,7 +110,7 @@ public class FileService {
 
     try {
       // 메타 정보에 기록된 경로를 통해 로컬 파일에 접근
-      Path filePath = Paths.get(fileMetadata.getStoragePath());
+      Path filePath = Paths.get(uploadPath).resolve(fileMetadata.getStoragePath()).normalize();
       Resource resource = new UrlResource(filePath.toUri());
 
       // 물리적 파일이 디스크에서 삭제되어있는지 확인

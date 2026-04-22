@@ -220,6 +220,11 @@ public class EmployeeService {
   }
 
   private EmployeeDto toDto(Employee employee) {
+    String profileImageUrl = null;
+    if(employee.getProfileImage() != null) {
+      profileImageUrl = "/uploads/" + employee.getProfileImage().getStoragePath();
+    }
+
     return new EmployeeDto(
         employee.getId(),
         employee.getName(),
@@ -230,7 +235,8 @@ public class EmployeeService {
         employee.getPosition(),
         employee.getHireDate(),
         employee.getStatus(),
-        employee.getProfileImage() != null ? employee.getProfileImage().getId() : null
+        employee.getProfileImage() != null ? employee.getProfileImage().getId() : null,
+        profileImageUrl
     );
   }
 

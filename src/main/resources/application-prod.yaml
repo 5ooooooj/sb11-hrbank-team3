@@ -13,7 +13,7 @@ spring:
       schema-locations: classpath:schema-postgres.sql
   mail:
     host: sandbox.smtp.mailtrap.io
-    port: 2525
+    port: ${MAIL_PORT:587}
     username: ${MAIL_USERNAME}
     password: ${MAIL_PASSWORD}
 

@@ -42,7 +42,7 @@ CREATE INDEX IF NOT EXISTS idx_emp_name ON employees (name);
 CREATE INDEX IF NOT EXISTS idx_emp_email ON employees (email);
 CREATE INDEX IF NOT EXISTS idx_emp_department ON employees (department_id);
 CREATE INDEX IF NOT EXISTS idx_emp_position ON employees (position);
-CREATE INDEX IF NOT EXISTS idx_employ_number ON employees (employee_number);
+CREATE INDEX IF NOT EXISTS idx_employee_number ON employees (employee_number);
 CREATE INDEX IF NOT EXISTS idx_emp_status_hire_date ON employees (status, hire_date DESC);
 
 -- 4. employee_audit_histories 테이블 생성

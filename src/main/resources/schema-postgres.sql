@@ -11,7 +11,8 @@ CREATE TABLE IF NOT EXISTS departments (
     updated_at TIMESTAMPTZ NOT NULL
 );
 -- 이름 또는 설명 (부분 일치 조건으로 인덱스 생성)
-CREATE INDEX IF NOT EXISTS idx_department_name_desc ON departments USING gin(name gin_trgm_ops, description gin_trgm_ops);
+CREATE INDEX IF NOT EXISTS idx_department_name_desc ON departments USING gin(name gin_trgm_ops);
+CREATE INDEX IF NOT EXISTS idx_department_description ON departments USING gin(description gin_trgm_ops);
 
 -- 2. files 테이블 생성
 CREATE TABLE IF NOT EXISTS files (
@@ -41,11 +42,12 @@ CREATE TABLE IF NOT EXISTS employees (
     CONSTRAINT fk_profile_image FOREIGN KEY (profile_image_id) REFERENCES files(id)
 );
 -- 이름 또는 이메일 (부분 일치 조건으로 인덱스 생성)
-CREATE INDEX IF NOT EXISTS idx_name_email ON employees USING  gin(name gin_trgm_ops, email gin_trgm_ops);
--- 부서ID (부서명 검색 시 departments 테이블과 빠른 조인을 위하여 일반 인덱스 사용)
-CREATE INDEX IF NOT EXISTS idx_emp_department_id On employees (department_id);
+CREATE INDEX IF NOT EXISTS idx_name ON employees USING gin(name gin_trgm_ops);
+CREATE INDEX IF NOT EXISTS idx_email ON employees USING gin(email gin_trgm_ops);
+-- 부서ID (특정 부서 직원 검색(WHERE), 참조 무결성 연산(CASCADE/SET NULL) 및  nested loop 조인 성능 최적화)
+CREATE INDEX IF NOT EXISTS idx_emp_department_id ON employees (department_id);
 -- 직함 (부분 일치)
-CREATE INDEX IF NOT EXISTS idx_position ON employees USING gin(position gin_trgm_ops);
+CREATE INDEX IF NOT EXISTS idx_position ON employees (position);
 -- 사원번호 (부분 일치)
 CREATE INDEX IF NOT EXISTS idx_employee_number ON employees USING gin(employee_number gin_trgm_ops);
 -- 상태 및 입사일 (완전 일치인 상태를 앞에 두어 상태를 기준으로 먼저 정렬 후 입사일 범위 조건)

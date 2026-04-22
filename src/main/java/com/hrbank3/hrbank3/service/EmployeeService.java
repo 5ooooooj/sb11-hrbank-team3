@@ -178,6 +178,8 @@ public class EmployeeService {
     // 수정 이력 저장을 위한 삭제 전 스냅샷
     Map<String, Object> beforeData = extractEmployeeData(employee);
 
+    // 알림 이벤트 발행
+    eventPublisher.publishEvent(new EmployeeNotificationEvent("EMPLOYEE_DELETE", employee));
 
     if (employee.getProfileImage() != null) {
       fileService.deletePhysicalFile(employee.getProfileImage().getStoragePath());
@@ -185,8 +187,6 @@ public class EmployeeService {
 
     employeeRepository.delete(employee);
 
-    // 알림 이벤트 발행
-    eventPublisher.publishEvent(new EmployeeNotificationEvent("EMPLOYEE_DELETE", employee));
     // 수정 이력 저장 이벤트 발행
     eventPublisher.publishEvent(new EmployeeAuditEvent(
         AuditType.DELETED,

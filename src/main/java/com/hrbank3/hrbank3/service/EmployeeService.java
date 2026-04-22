@@ -55,7 +55,7 @@ public class EmployeeService {
       Employee employee = Employee.create(
           request.name(),
           request.email(),
-          department, // Long -> Department 객체로 변경
+          department,
           request.position(),
           request.hireDate(),
           savedProfileImage

@@ -19,10 +19,10 @@ import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
-public class BackupHistoryTransaction {
-    private final BackupHistoryRepository backupHistoryRepository;
-    private final EmployeeRepository employeeRepository;
-    private final FileMetadataRepository fileMetadataRepository;
+public class BackupHistoryPersistence {
+  private final BackupHistoryRepository backupHistoryRepository;
+  private final EmployeeRepository employeeRepository;
+  private final FileMetadataRepository fileMetadataRepository;
 
   // 백업 필요 여부 반한 후 IN_PROGRESS 또는 SKIPPED 이력 저장 메서드
   @Transactional(propagation = Propagation.REQUIRES_NEW)

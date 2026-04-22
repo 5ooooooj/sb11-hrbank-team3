@@ -3,12 +3,15 @@ package com.hrbank3.hrbank3.repository.condition;
 import com.hrbank3.hrbank3.entity.enums.BackupHistorySortType;
 import com.hrbank3.hrbank3.entity.enums.BackupStatus;
 import java.time.ZonedDateTime;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Getter
-@Setter
+@Builder
+@AllArgsConstructor
 @NoArgsConstructor
 public class BackupHistorySearchCondition {
   private String worker;

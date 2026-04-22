@@ -28,7 +28,7 @@ public record CursorPageResponseBackupDto(
             content.get(content.size() - 1).endedAt().toInstant().toString();
         case STATUS_ASC, STATUS_DESC ->
             content.get(content.size() - 1).status();
-        default ->
+        case STARTED_AT_ASC, STARTED_AT_DESC ->
             content.get(content.size() - 1).startedAt().toInstant().toString();
       };
       nextCursor = Base64.getEncoder().encodeToString(cursorBase.getBytes());

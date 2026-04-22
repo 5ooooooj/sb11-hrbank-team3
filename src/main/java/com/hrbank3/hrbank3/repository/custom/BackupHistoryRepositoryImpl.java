@@ -87,7 +87,10 @@ public class BackupHistoryRepositoryImpl implements BackupHistoryRepositoryCusto
   // gt = great than, lt = less than
   private BooleanExpression cursorCondition(String cursor, Long lastId, BackupHistorySortType sortType) {
     // cursor나 lastId가 없으면 첫 페이지이므로 조건 없음
-    if (cursor == null || lastId == null) return null;
+    if (cursor == null && lastId == null) return null;
+    if (cursor == null || lastId == null) {
+      throw new IllegalArgumentException("cursor와 lastId는 함께 전달되어야 합니다");
+    }
 
     // Base64로 인코딩된 cursor를 디코딩해서 문자열로 변환
     String decodedCursor = new String(Base64.getDecoder().decode(cursor));

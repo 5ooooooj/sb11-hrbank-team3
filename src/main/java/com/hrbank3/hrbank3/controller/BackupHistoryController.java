@@ -2,6 +2,7 @@ package com.hrbank3.hrbank3.controller;
 
 import com.hrbank3.hrbank3.common.util.IpExtractUtil;
 import com.hrbank3.hrbank3.dto.backupHistory.BackupHistoryDto;
+import com.hrbank3.hrbank3.dto.backupHistory.BackupHistorySearchRequest;
 import com.hrbank3.hrbank3.dto.backupHistory.CursorPageResponseBackupDto;
 import com.hrbank3.hrbank3.entity.enums.BackupHistorySortType;
 import com.hrbank3.hrbank3.entity.enums.BackupStatus;
@@ -17,6 +18,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -38,10 +40,10 @@ public class BackupHistoryController {
       @ApiResponse(responseCode = "500", description = "서버 오류")
   })
   public ResponseEntity<BackupHistoryDto> getLatestBackup(
-      @RequestParam(defaultValue = "COMPLETED") String status) {
-    return ResponseEntity.ok(
-        backupHistoryService.getLatestBackup(status).orElse(null)
-    );
+      @RequestParam(defaultValue = "COMPLETED") BackupStatus status) {
+    return backupHistoryService.getLatestBackup(status)
+        .map(ResponseEntity::ok)
+        .orElseGet(() -> ResponseEntity.noContent().build());
   }
 
   // 데이터 백업 목록 조회 api (GET)
@@ -53,30 +55,9 @@ public class BackupHistoryController {
       @ApiResponse(responseCode = "500", description = "서버 오류")
   })
   public ResponseEntity<CursorPageResponseBackupDto> getAllBackups(
-      @RequestParam(required = false) String worker,
-      @RequestParam(required = false) String status,
-      @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) ZonedDateTime startedAtFrom,
-      @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) ZonedDateTime startedAtTo,
-      @RequestParam(required = false) Long idAfter,
-      @RequestParam(required = false) String cursor,
-      @RequestParam(defaultValue = "10") int size,
-      @RequestParam(defaultValue = "startedAt") String sortField,
-      @RequestParam(defaultValue = "DESC") String sortDirection
+      @ModelAttribute BackupHistorySearchRequest request
   ) {
-    BackupHistorySortType sortType = BackupHistorySortType.from(sortField, sortDirection);
-    // from()에서 지원하지 않는 sortField면 400 예외 던지도록 구현
-
-    BackupHistorySearchCondition condition = new BackupHistorySearchCondition();
-    condition.setWorker(worker);
-    condition.setStatus(status != null ? BackupStatus.valueOf(status) : null);
-    condition.setStartedAtFrom(startedAtFrom);
-    condition.setStartedAtTo(startedAtTo);
-    condition.setCursor(cursor);
-    condition.setLastId(idAfter);
-    condition.setSortType(sortType);
-    condition.setPageSize(size);
-
-    return ResponseEntity.ok(backupHistoryService.getBackupHistories(condition));
+    return ResponseEntity.ok(backupHistoryService.getBackupHistories(request.toCondition()));
 
   }
 

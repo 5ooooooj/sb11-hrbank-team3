@@ -6,7 +6,7 @@ CREATE TABLE IF NOT EXISTS departments (
     name VARCHAR(100) NOT NULL,
     description VARCHAR(255),
     established_date DATE NOT NULL,
-    depratment_mail VARCHAR(255),
+    department_mail VARCHAR(255),
     created_at TIMESTAMPTZ NOT NULL,
     updated_at TIMESTAMPTZ NOT NULL
 );

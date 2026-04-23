@@ -11,27 +11,11 @@ spring:
     init:
       mode: always
       schema-locations: classpath:schema-postgres.sql
-  mail:
-    host: sandbox.smtp.mailtrap.io
-    port: ${MAIL_PORT:587}
-    username: ${MAIL_USERNAME}
-    password: ${MAIL_PASSWORD}
-
-management:
-  endpoints:
-    web:
-      exposure:
-        include: health
-  endpoint:
-    health:
-      show-details: never
-  health:
-    mail:
-      enabled: false 
-
-
 logging:
   level:
     root: WARN
     com.yourpackage: INFO
+
+mailtrap:
+  api-token: ${MAILTRAP_API_TOKEN:}
 

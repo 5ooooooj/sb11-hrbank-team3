@@ -5,12 +5,12 @@ spring:
     password: ${SPRING_DATASOURCE_PASSWORD}
   jpa:
     hibernate:
-      ddl-auto: validate  # prod는 validate (스키마 자동 변경 X)
+      ddl-auto: none
     show-sql: false
   sql:
     init:
-      mode: never
-
+      mode: always
+      schema-locations: classpath:schema-postgres.sql
 logging:
   level:
     root: WARN

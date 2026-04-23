@@ -69,7 +69,7 @@ public class BackupHistoryRepositoryImpl implements BackupHistoryRepositoryCusto
 
     // 조회를 위한 Instant 변환
     Instant fromInstant = from != null ? from.toInstant() : null;
-    Instant toInstant = to != null ? to.toInstant() : null;
+    Instant toInstant = to != null ? to.plusDays(1).minusNanos(1).toInstant() : null;
 
     if (fromInstant == null) return backupHistory.startedAt.loe(toInstant);
     if (toInstant == null) return backupHistory.startedAt.goe(fromInstant);

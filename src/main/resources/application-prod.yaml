@@ -10,15 +10,12 @@ spring:
   sql:
     init:
       mode: never
-  mail:
-    host: sandbox.smtp.mailtrap.io
-    port: 2525
-    username: ${MAIL_USERNAME}
-    password: ${MAIL_PASSWORD}
-
 
 logging:
   level:
     root: WARN
     com.yourpackage: INFO
+
+mailtrap:
+  api-token: ${MAILTRAP_API_TOKEN:}
 

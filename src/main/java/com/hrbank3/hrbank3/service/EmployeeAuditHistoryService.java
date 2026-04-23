@@ -22,6 +22,7 @@ import java.util.NoSuchElementException;
 import java.util.Objects;
 import java.util.Set;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -29,6 +30,7 @@ import org.springframework.transaction.event.TransactionPhase;
 import org.springframework.transaction.event.TransactionalEventListener;
 import org.springframework.util.StringUtils;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class EmployeeAuditHistoryService {
@@ -140,7 +142,10 @@ public class EmployeeAuditHistoryService {
                 .map(DiffDto::before)
                 .findFirst()
                 .filter(val -> !"-".equals(val) && !"null".equals(val))
-                .orElse(null);
+                .orElseGet(() -> {
+                  log.warn("직원 사번 스냅샷 복원 실패: {}", audit.getId());
+                  return null;
+                });
 
             Long recoveredProfileId = diffs.stream()
                 .filter(d -> "profileImageId".equals(d.propertyName()))
@@ -154,7 +159,10 @@ public class EmployeeAuditHistoryService {
                     return null;
                   }
                 })
-                .orElse(null);
+                .orElseGet(() -> {
+                  log.info("직원 프로필 아이디 스냅샷 복원 실패: {}", audit.getId());
+                  return null;
+                });
             return new EmployeeInfo(recoveredName, recoveredProfileId);
           }
           return new EmployeeInfo(null, null);

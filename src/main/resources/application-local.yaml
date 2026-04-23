@@ -27,6 +27,3 @@ file:
 backup:
   schedule:
     cron: "-" # 로컬에선 스케줄러 주기 비활성화
-
-mailtrap:
-  api-token: 32a36445711984266993bab519d5e799

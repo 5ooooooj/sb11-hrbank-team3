@@ -18,6 +18,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.NoSuchElementException;
 import java.util.Objects;
 import java.util.Set;
 import lombok.RequiredArgsConstructor;
@@ -91,7 +92,7 @@ public class EmployeeAuditHistoryService {
   @Transactional(readOnly = true)
   public ChangeLogDetailDto find(Long id) {
     EmployeeAuditHistory audit = auditRepository.findById(id)
-        .orElseThrow(() -> new IllegalArgumentException("이력을 찾을 수 없습니다."));
+        .orElseThrow(() -> new NoSuchElementException("이력을 찾을 수 없습니다."));
 
     List<DiffDto> diffs = audit.getChangedContent().entrySet().stream()
         .map(entry -> {

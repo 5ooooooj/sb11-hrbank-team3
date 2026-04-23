@@ -74,12 +74,15 @@ public class EmployeeAuditHistoryService {
     }
 
     for (String key : allKeys) {
-      Object before =
-          (beforeData != null && beforeData.get(key) != null) ? beforeData.get(key) : "-";
-      Object after = (afterData != null && afterData.get(key) != null) ? afterData.get(key) : "-";
+      Object before = (beforeData != null) ? beforeData.get(key) : null;
+      Object after = (afterData != null) ? afterData.get(key) : null;
 
       if (!Objects.equals(before, after)) {
-        diffMap.put(key, Map.of("before", before, "after", after));
+        Map<String, Object> diffEntry = new HashMap<>();
+        diffEntry.put("before", before);
+        diffEntry.put("after", after);
+
+        diffMap.put(key, diffEntry);
       }
     }
     return diffMap;
@@ -105,11 +108,13 @@ public class EmployeeAuditHistoryService {
             return new DiffDto(entry.getKey(), "-", "-");
           }
 
-          return new DiffDto(
-              entry.getKey(),
-              String.valueOf(values.get("before")),
-              String.valueOf(values.get("after"))
-          );
+          Object beforeRaw = values.get("before");
+          Object afterRaw = values.get("after");
+
+          String beforeStr = beforeRaw == null ? null : String.valueOf(beforeRaw);
+          String afterStr = afterRaw == null ? null : String.valueOf(afterRaw);
+
+          return new DiffDto(entry.getKey(), beforeStr, afterStr);
         })
         .toList();
 
@@ -140,8 +145,8 @@ public class EmployeeAuditHistoryService {
             String recoveredName = diffs.stream()
                 .filter(d -> "name".equals(d.propertyName()))
                 .map(DiffDto::before)
+                .filter(val -> val != null && !"-".equals(val))
                 .findFirst()
-                .filter(val -> !"-".equals(val) && !"null".equals(val))
                 .orElseGet(() -> {
                   log.warn("직원 사번 스냅샷 복원 실패: {}", audit.getId());
                   return null;
@@ -150,8 +155,8 @@ public class EmployeeAuditHistoryService {
             Long recoveredProfileId = diffs.stream()
                 .filter(d -> "profileImageId".equals(d.propertyName()))
                 .map(DiffDto::before)
+                .filter(val -> val != null && !"-".equals(val))
                 .findFirst()
-                .filter(val -> !"-".equals(val) && !"null".equals(val))
                 .map(val -> {
                   try {
                     return Long.parseLong(val);

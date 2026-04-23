@@ -6,29 +6,41 @@ import com.hrbank3.hrbank3.entity.enums.NotificationStatus;
 import com.hrbank3.hrbank3.event.BackupNotificationEvent;
 import com.hrbank3.hrbank3.event.EmployeeNotificationEvent;
 import com.hrbank3.hrbank3.repository.NotificationRepository;
-import jakarta.mail.MessagingException;
-import jakarta.mail.internet.MimeMessage;
+import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.event.EventListener;
-import org.springframework.mail.javamail.JavaMailSender;
-import org.springframework.mail.javamail.MimeMessageHelper;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.client.RestTemplate;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 @Slf4j
 @Service
 @RequiredArgsConstructor
 public class NotificationService {
 
-  private final JavaMailSender mailSender;
   private final NotificationRepository notificationRepository;
+  private final RestTemplate restTemplate;
 
   @Value("${notification.admin-email}")
   private String adminEmail;
 
+  @Value("${mailtrap.api-token}")
+  private String mailtrapApiToken;
+
+  private static final String MAILTRAP_API_URL = "https://sandbox.api.mailtrap.io/api/send/4562077";
+
   // 직원 알림 이벤트
+  @Async
   @EventListener
   @Transactional
   public void handleEmployeeNotification(EmployeeNotificationEvent event) {
@@ -44,6 +56,7 @@ public class NotificationService {
   }
 
   // 백업 알림 이벤트
+  @Async
   @EventListener
   @Transactional
   public void handleBackupNotification(BackupNotificationEvent event) {
@@ -75,16 +88,20 @@ public class NotificationService {
     notificationRepository.save(notification);
   }
 
-  // 실제 메일 발송
-  private void sendMail(String to, String subject, String content) throws MessagingException {
-    // Multipurpose Internet Mail Extension : 한글, 첨부파일, HTML 지원
-    MimeMessage message = mailSender.createMimeMessage();
-    MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
-    helper.setTo(to);
-    helper.setSubject(subject);
-    // 현재는 단순 텍스트라서 true로 변경시 HTML 형식으로 바꾸고 build*Content() 내용 수정해야 함
-    helper.setText(content, false);
-    mailSender.send(message);
+  // Mailtrap API로 메일 발송
+  private void sendMail(String to, String subject, String content) {
+    HttpHeaders headers = new HttpHeaders();
+    headers.setContentType(MediaType.APPLICATION_JSON);
+    headers.setBearerAuth(mailtrapApiToken);
+
+    Map<String, Object> body = new HashMap<>();
+    body.put("from", Map.of("email", "sb11_team3@hrbank.com", "name", "HRBANK"));
+    body.put("to", List.of(Map.of("email", to)));
+    body.put("subject", subject);
+    body.put("html", content);
+
+    HttpEntity<Map<String, Object>> request = new HttpEntity<>(body, headers);
+    restTemplate.postForObject(MAILTRAP_API_URL, request, String.class);
   }
 
   // 직원 알림 메일 내용

@@ -22,9 +22,11 @@ import java.util.NoSuchElementException;
 import java.util.Objects;
 import java.util.Set;
 import lombok.RequiredArgsConstructor;
-import org.springframework.context.event.EventListener;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.event.TransactionPhase;
+import org.springframework.transaction.event.TransactionalEventListener;
 import org.springframework.util.StringUtils;
 
 @Service
@@ -36,8 +38,8 @@ public class EmployeeAuditHistoryService {
   private final EmployeeRepository employeeRepository;
 
   // 직원 정보 수정 시 발생하는 핸들링
-  @Transactional
-  @EventListener
+  @Async
+  @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
   public void recordAuditHistory(EmployeeAuditEvent event) {
     Map<String, Object> changedContent = extractDiff(event.beforeData(), event.afterData());
 

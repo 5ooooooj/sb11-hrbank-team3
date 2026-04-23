@@ -3,7 +3,7 @@ CREATE EXTENSION IF NOT EXISTS pg_trgm;
 -- 1. departments 테이블 생성
 CREATE TABLE IF NOT EXISTS departments (
     id BIGSERIAL PRIMARY KEY,
-    name VARCHAR(100) NOT NULL,
+    name VARCHAR(100) UNIQUE NOT NULL,
     description VARCHAR(255),
     established_date DATE NOT NULL,
     department_mail VARCHAR(255),
@@ -30,7 +30,7 @@ CREATE TABLE IF NOT EXISTS employees (
     id BIGSERIAL PRIMARY KEY,
     employee_number VARCHAR(50) NOT NULL,
     name VARCHAR(50) NOT NULL,
-    email VARCHAR(255) NOT NULL,
+    email VARCHAR(255) UNIQUE NOT NULL,
     department_id BIGINT NOT NULL,
     position VARCHAR(50) NOT NULL,
     status VARCHAR(10) NOT NULL,

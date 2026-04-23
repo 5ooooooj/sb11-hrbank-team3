@@ -31,9 +31,6 @@ backup:
 notification:
   admin-email: ${NOTIFICATION_ADMIN_EMAIL:admin@hrbank.com}
 
-mailtrap:
-  api-token: ${MAILTRAP_API_TOKEN:}
-
 management:
   endpoints:
     web:

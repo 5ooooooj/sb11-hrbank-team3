@@ -34,7 +34,7 @@ public class NotificationService {
   @Value("${notification.admin-email}")
   private String adminEmail;
 
-  @Value("${mailtrap.api-token}")
+  @Value("${mailtrap.api-token:}")
   private String mailtrapApiToken;
 
   private static final String MAILTRAP_API_URL = "https://sandbox.api.mailtrap.io/api/send/4562077";

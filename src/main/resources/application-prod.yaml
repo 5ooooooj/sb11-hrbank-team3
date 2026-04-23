@@ -16,3 +16,6 @@ logging:
     root: WARN
     com.yourpackage: INFO
 
+mailtrap:
+  api-token: ${MAILTRAP_API_TOKEN:}
+

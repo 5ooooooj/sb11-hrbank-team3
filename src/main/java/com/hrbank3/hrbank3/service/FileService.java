@@ -109,8 +109,14 @@ public class FileService {
         .orElseThrow(() -> new IllegalArgumentException("해당 ID의 파일 메타데이터를 찾을 수 없습니다."));
 
     try {
-      // 메타 정보에 기록된 경로를 통해 로컬 파일에 접근
-      Path filePath = Paths.get(uploadPath).resolve(fileMetadata.getStoragePath()).normalize();
+      // storagePath가 전체 경로(백업 파일)인지 파일명만(프로필 이미지)인지 판단
+      String storagePath = fileMetadata.getStoragePath();
+      Path filePath;
+      if(storagePath.contains("/") || storagePath.contains("\\")) {
+        filePath = Paths.get(storagePath);
+      } else {
+        filePath = Paths.get(uploadPath).resolve(fileMetadata.getStoragePath()).normalize();
+      }
       Resource resource = new UrlResource(filePath.toUri());
 
       // 물리적 파일이 디스크에서 삭제되어있는지 확인

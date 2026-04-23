@@ -121,15 +121,21 @@ public class EmployeeRepositoryImpl implements EmployeeRepositoryCustom {
     return idAfter != null ? employee.id.gt(idAfter) : null;
   }
 
-  private OrderSpecifier<?> resolveOrderBy(String sortField, String sortDirection) {
+  private OrderSpecifier<?>[] resolveOrderBy(String sortField, String sortDirection) {
     // 대소문자 구분 없이 비교, desc 와 DESC는 같음
     boolean isAsc = !"desc".equalsIgnoreCase(sortDirection);
     if ("employeeNumber".equals(sortField)) {
-      return isAsc ? employee.employeeNumber.asc() : employee.employeeNumber.desc();
+      return isAsc
+          ? new OrderSpecifier[]{employee.employeeNumber.asc(), employee.id.asc()}
+          : new OrderSpecifier[]{employee.employeeNumber.desc(), employee.id.desc()};
     }
     if ("hireDate".equals(sortField)) {
-      return isAsc ? employee.hireDate.asc() : employee.hireDate.desc();
+      return isAsc
+          ? new OrderSpecifier[]{employee.hireDate.asc(), employee.id.asc()}
+          : new OrderSpecifier[]{employee.hireDate.desc(), employee.id.desc()};
     }
-    return isAsc ? employee.name.asc() : employee.name.desc();
+    return isAsc
+        ? new OrderSpecifier[]{employee.name.asc(), employee.id.asc()}
+        : new OrderSpecifier[]{employee.name.desc(), employee.id.desc()};
   }
 }

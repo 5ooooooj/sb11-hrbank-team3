@@ -109,7 +109,7 @@ public class EmployeeAuditHistoryRepositoryImpl implements EmployeeAuditHistoryR
       return null;
     }
     Instant fromInstant = from != null ? from.toInstant() : null;
-    Instant toInstant = to != null ? to.toInstant() : null;
+    Instant toInstant = to != null ? to.plusDays(1).minusNanos(1).toInstant() : null;
 
     if (fromInstant == null) {
       return history.createdAt.loe(toInstant);

@@ -1,6 +1,5 @@
 package com.hrbank3.hrbank3.repository.custom;
 
-import com.hrbank3.hrbank3.dto.CursorPageResponseDto;
 import com.hrbank3.hrbank3.dto.audit_history.ChangeLogDto;
 import com.hrbank3.hrbank3.entity.QEmployeeAuditHistory;
 import com.hrbank3.hrbank3.entity.enums.AuditType;
@@ -26,32 +25,19 @@ public class EmployeeAuditHistoryRepositoryImpl implements EmployeeAuditHistoryR
   private final QEmployeeAuditHistory history = QEmployeeAuditHistory.employeeAuditHistory;
 
   @Override
-  public CursorPageResponseDto<ChangeLogDto> findAllWithCursor(ChangeLogSearchCondition condition) {
+  public List<ChangeLogDto> findChangeLogs(ChangeLogSearchCondition condition) {
     BooleanBuilder builder = new BooleanBuilder();
 
-    // 필터링 조건 추가
+    // 필터링 및 커서 조건 추가
     builder.and(employeeNumberContains(condition.employeeNumber()))
         .and(typeEq(condition.type()))
         .and(memoContains(condition.memo()))
         .and(ipAddressContains(condition.ipAddress()))
-        .and(createdAtBetween(condition.atFrom(), condition.atTo()));
-
-    // 전체 데이터 개수 조회
-    // 초기로딩 1회만 count 쿼리를 실행하여 불필요한 쿼리 생략하여 성능 개선
-    long totalElements = 0L;
-    if (!StringUtils.hasText(condition.cursor())) {
-      totalElements = Optional.ofNullable(
-          queryFactory.select(history.count()).from(history).where(builder).fetchOne()
-      ).orElse(0L);
-    }
-
-    // 커서 페이징 조건 추가
-    builder.and(
-        cursorCondition(condition.cursor(), condition.idAfter(), condition.sortField(),
+        .and(createdAtBetween(condition.atFrom(), condition.atTo()))
+        .and(cursorCondition(condition.cursor(), condition.idAfter(), condition.sortField(),
             condition.sortDirection()));
 
-    // 데이터 조회
-    List<ChangeLogDto> results = queryFactory
+    return queryFactory
         .select(Projections.constructor(ChangeLogDto.class,
             history.id,
             history.auditType,
@@ -63,29 +49,24 @@ public class EmployeeAuditHistoryRepositoryImpl implements EmployeeAuditHistoryR
         .from(history)
         .where(builder)
         .orderBy(resolveOrderSpecifiers(condition.sortField(), condition.sortDirection()))
-        .limit(condition.size() + 1) // 다음 페이지가 있는지 확인하기 위해 1개 더 조회
+        .limit(condition.size() + 1) // Service에서 hasNext를 확인할 수 있도록 1개 더 조회
         .fetch();
+  }
 
-    // 다음 페이지 존재 여부 확인
-    boolean hasNext = results.size() > condition.size();
-    if (hasNext) {
-      results = results.subList(0, condition.size());
-    }
+  // count 쿼리
+  @Override
+  public long countChangeLogs(ChangeLogSearchCondition condition) {
+    BooleanBuilder builder = new BooleanBuilder();
 
-    // 다음 페이지를 위한 커서 값 생성
-    String nextCursor = null;
-    Long nextIdAfter = null;
-    if (hasNext) {
-      ChangeLogDto lastItem = results.get(results.size() - 1);
-      nextIdAfter = lastItem.id();
-      // 시간/IP주소 정렬 기준에 따라 다음 커서값 세팅
-      nextCursor = "ipAddress".equals(condition.sortField())
-          ? lastItem.ipAddress()
-          : lastItem.at().toString();
-    }
+    builder.and(employeeNumberContains(condition.employeeNumber()))
+        .and(typeEq(condition.type()))
+        .and(memoContains(condition.memo()))
+        .and(ipAddressContains(condition.ipAddress()))
+        .and(createdAtBetween(condition.atFrom(), condition.atTo()));
 
-    return new CursorPageResponseDto<>(results, nextCursor, nextIdAfter, results.size(),
-        totalElements, hasNext);
+    return Optional.ofNullable(
+        queryFactory.select(history.count()).from(history).where(builder).fetchOne()
+    ).orElse(0L);
   }
 
   /*필터링 조건 메서드*/

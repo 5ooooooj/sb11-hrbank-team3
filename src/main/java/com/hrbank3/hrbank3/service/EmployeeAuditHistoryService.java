@@ -98,7 +98,32 @@ public class EmployeeAuditHistoryService {
   public CursorPageResponseDto<ChangeLogDto> findAll(ChangeLogSearchCondition condition) {
     validatePaginationParams(condition.cursor(), condition.idAfter());
 
-    return customAuditRepository.findAllWithCursor(condition);
+    List<ChangeLogDto> results = customAuditRepository.findChangeLogs(condition);
+
+    boolean hasNext = results.size() > condition.size();
+    if (hasNext) {
+      results = results.subList(0, condition.size());
+    }
+
+    long totalElements = 0L;
+    if (!StringUtils.hasText(condition.cursor())) {
+      totalElements = customAuditRepository.countChangeLogs(condition);
+    }
+
+    // 다음 페이지를 위한 커서 값 생성
+    String nextCursor = null;
+    Long nextIdAfter = null;
+    if (hasNext) {
+      ChangeLogDto lastItem = results.get(results.size() - 1);
+      nextIdAfter = lastItem.id();
+      // 시간/IP주소 정렬 기준에 따라 다음 커서값 세팅
+      nextCursor = "ipAddress".equals(condition.sortField())
+          ? lastItem.ipAddress()
+          : lastItem.at().toString();
+    }
+
+    return new CursorPageResponseDto<>(
+        results, nextCursor, nextIdAfter, results.size(), totalElements, hasNext);
   }
 
   // 상세 데이터 읽기

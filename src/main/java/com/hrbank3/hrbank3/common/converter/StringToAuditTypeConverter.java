@@ -1,4 +1,4 @@
-package com.hrbank3.hrbank3.common;
+package com.hrbank3.hrbank3.common.converter;
 
 import com.hrbank3.hrbank3.entity.enums.AuditType;
 import org.springframework.core.convert.converter.Converter;
@@ -13,7 +13,7 @@ public class StringToAuditTypeConverter implements Converter<String, AuditType> 
     if (source.trim().isEmpty() || "ALL".equalsIgnoreCase(source)) {
       return null;
     }
-    
+
     for (AuditType type : AuditType.values()) {
       if (type.name().equalsIgnoreCase(source)) {
         return type;

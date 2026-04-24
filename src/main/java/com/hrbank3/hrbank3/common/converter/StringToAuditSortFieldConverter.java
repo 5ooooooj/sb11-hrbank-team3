@@ -1,4 +1,4 @@
-package com.hrbank3.hrbank3.common;
+package com.hrbank3.hrbank3.common.converter;
 
 import com.hrbank3.hrbank3.entity.enums.AuditSortField;
 import org.springframework.core.convert.converter.Converter;

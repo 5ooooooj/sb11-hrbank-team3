@@ -1,8 +1,8 @@
 package com.hrbank3.hrbank3.service;
 
 import com.hrbank3.hrbank3.dto.CursorPageResponseDto;
-import com.hrbank3.hrbank3.dto.department.DepartmentDto;
 import com.hrbank3.hrbank3.dto.department.DepartmentCreateRequest;
+import com.hrbank3.hrbank3.dto.department.DepartmentDto;
 import com.hrbank3.hrbank3.dto.department.DepartmentUpdateRequest;
 import com.hrbank3.hrbank3.entity.Department;
 import com.hrbank3.hrbank3.entity.enums.EmployeeStatus;

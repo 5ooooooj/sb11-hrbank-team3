@@ -1,4 +1,4 @@
-package com.hrbank3.hrbank3.repository.condition;
+package com.hrbank3.hrbank3.dto.audit_history;
 
 import com.hrbank3.hrbank3.entity.enums.AuditSortField;
 import com.hrbank3.hrbank3.entity.enums.AuditType;

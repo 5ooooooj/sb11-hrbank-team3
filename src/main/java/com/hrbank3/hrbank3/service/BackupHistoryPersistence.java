@@ -20,6 +20,7 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 @RequiredArgsConstructor
 public class BackupHistoryPersistence {
+
   private final BackupHistoryRepository backupHistoryRepository;
   private final EmployeeRepository employeeRepository;
   private final FileMetadataRepository fileMetadataRepository;
@@ -61,17 +62,17 @@ public class BackupHistoryPersistence {
     return employeeRepository.existsByUpdatedAtAfter(lastBackupTime);
   }
 
-    @Transactional(propagation = Propagation.REQUIRES_NEW)
-    public void complete(BackupHistory history, FileMetadata file) {
-      history.updateComplete(file);
-      backupHistoryRepository.save(history);
-    }
+  @Transactional(propagation = Propagation.REQUIRES_NEW)
+  public void complete(BackupHistory history, FileMetadata file) {
+    history.updateComplete(file);
+    backupHistoryRepository.save(history);
+  }
 
-    @Transactional(propagation = Propagation.REQUIRES_NEW)
-    public void fail(BackupHistory history, FileMetadata logFile) {
-      history.updateFail(logFile);
-      backupHistoryRepository.save(history);
-    }
+  @Transactional(propagation = Propagation.REQUIRES_NEW)
+  public void fail(BackupHistory history, FileMetadata logFile) {
+    history.updateFail(logFile);
+    backupHistoryRepository.save(history);
+  }
 
   // Path를 받아 FileMetadata 엔티티 생성 후 db 저장
   @Transactional(propagation = Propagation.REQUIRES_NEW)

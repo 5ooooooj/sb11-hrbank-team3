@@ -1,7 +1,7 @@
 package com.hrbank3.hrbank3.repository.custom;
 
 import com.hrbank3.hrbank3.dto.audit_history.ChangeLogDto;
-import com.hrbank3.hrbank3.repository.condition.ChangeLogSearchCondition;
+import com.hrbank3.hrbank3.dto.audit_history.ChangeLogSearchCondition;
 import java.util.List;
 
 public interface EmployeeAuditHistoryRepositoryCustom {

@@ -1,11 +1,10 @@
-package com.hrbank3.hrbank3.repository;
+package com.hrbank3.hrbank3.repository.custom;
 
 import com.hrbank3.hrbank3.dto.CursorPageResponseDto;
 import com.hrbank3.hrbank3.dto.audit_history.ChangeLogDto;
 import com.hrbank3.hrbank3.entity.QEmployeeAuditHistory;
 import com.hrbank3.hrbank3.entity.enums.AuditType;
 import com.hrbank3.hrbank3.repository.condition.ChangeLogSearchCondition;
-import com.hrbank3.hrbank3.repository.custom.EmployeeAuditHistoryRepositoryCustom;
 import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Projections;
@@ -30,11 +29,11 @@ public class EmployeeAuditHistoryRepositoryImpl implements EmployeeAuditHistoryR
     BooleanBuilder builder = new BooleanBuilder();
 
     // 필터링 조건 추가
-    builder.and(employeeNumberContains(condition.getEmployeeNumber()))
-        .and(typeEq(condition.getType()))
-        .and(memoContains(condition.getMemo()))
-        .and(ipAddressContains(condition.getIpAddress()))
-        .and(createdAtBetween(condition.getAtFrom(), condition.getAtTo()));
+    builder.and(employeeNumberContains(condition.employeeNumber()))
+        .and(typeEq(condition.type()))
+        .and(memoContains(condition.memo()))
+        .and(ipAddressContains(condition.ipAddress()))
+        .and(createdAtBetween(condition.atFrom(), condition.atTo()));
 
     // 전체 데이터 개수 조회
     long totalElements = Optional.ofNullable(
@@ -43,8 +42,8 @@ public class EmployeeAuditHistoryRepositoryImpl implements EmployeeAuditHistoryR
 
     // 커서 페이징 조건 추가
     builder.and(
-        cursorCondition(condition.getCursor(), condition.getIdAfter(), condition.getSortField(),
-            condition.getSortDirection()));
+        cursorCondition(condition.cursor(), condition.idAfter(), condition.sortField(),
+            condition.sortDirection()));
 
     // 데이터 조회
     List<ChangeLogDto> results = queryFactory
@@ -58,14 +57,14 @@ public class EmployeeAuditHistoryRepositoryImpl implements EmployeeAuditHistoryR
         ))
         .from(history)
         .where(builder)
-        .orderBy(resolveOrderSpecifiers(condition.getSortField(), condition.getSortDirection()))
-        .limit(condition.getSize() + 1) // 다음 페이지가 있는지 확인하기 위해 1개 더 조회
+        .orderBy(resolveOrderSpecifiers(condition.sortField(), condition.sortDirection()))
+        .limit(condition.size() + 1) // 다음 페이지가 있는지 확인하기 위해 1개 더 조회
         .fetch();
 
     // 다음 페이지 존재 여부 확인
-    boolean hasNext = results.size() > condition.getSize();
+    boolean hasNext = results.size() > condition.size();
     if (hasNext) {
-      results = results.subList(0, condition.getSize());
+      results = results.subList(0, condition.size());
     }
 
     // 다음 페이지를 위한 커서 값 생성
@@ -75,7 +74,7 @@ public class EmployeeAuditHistoryRepositoryImpl implements EmployeeAuditHistoryR
       ChangeLogDto lastItem = results.get(results.size() - 1);
       nextIdAfter = lastItem.id();
       // 시간/IP주소 정렬 기준에 따라 다음 커서값 세팅
-      nextCursor = "ipAddress".equals(condition.getSortField())
+      nextCursor = "ipAddress".equals(condition.sortField())
           ? lastItem.ipAddress()
           : lastItem.at().toString();
     }

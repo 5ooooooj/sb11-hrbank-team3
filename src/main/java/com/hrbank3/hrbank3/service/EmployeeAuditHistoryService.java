@@ -96,7 +96,7 @@ public class EmployeeAuditHistoryService {
 
   @Transactional(readOnly = true)
   public CursorPageResponseDto<ChangeLogDto> findAll(ChangeLogSearchCondition condition) {
-    validatePaginationParams(condition.getCursor(), condition.getIdAfter());
+    validatePaginationParams(condition.cursor(), condition.idAfter());
 
     return customAuditRepository.findAllWithCursor(condition);
   }

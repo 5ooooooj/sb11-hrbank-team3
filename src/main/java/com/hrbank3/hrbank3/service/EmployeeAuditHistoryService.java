@@ -39,7 +39,13 @@ public class EmployeeAuditHistoryService {
   private final EmployeeAuditHistoryRepositoryCustom customAuditRepository;
   private final EmployeeRepository employeeRepository;
 
-  // 직원 정보 수정 시 발생하는 핸들링
+
+  /*
+   * 직원 정보 수정 시 발생하는 이벤트 핸들링
+   * 메인 비즈니스 로직의 응답 속도 저하를 막고,
+   * 이력 저장이 실패하더라도 메인 트랜잭션이 롤백되지 않도록
+   * 의도적으로 비동기 처리(@Async) 및 트랜잭션을 분리(AFTER_COMMIT)하였습니다.
+   */
   @Async
   @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
   public void recordAuditHistory(EmployeeAuditEvent event) {

@@ -1,10 +1,10 @@
 package com.hrbank3.hrbank3.repository.custom;
 
 import com.hrbank3.hrbank3.dto.audit_history.ChangeLogDto;
+import com.hrbank3.hrbank3.dto.audit_history.ChangeLogSearchCondition;
 import com.hrbank3.hrbank3.entity.QEmployeeAuditHistory;
 import com.hrbank3.hrbank3.entity.enums.AuditSortField;
 import com.hrbank3.hrbank3.entity.enums.AuditType;
-import com.hrbank3.hrbank3.repository.condition.ChangeLogSearchCondition;
 import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Projections;

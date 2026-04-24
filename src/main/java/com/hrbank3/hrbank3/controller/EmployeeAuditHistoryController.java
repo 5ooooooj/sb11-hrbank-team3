@@ -4,7 +4,7 @@ import com.hrbank3.hrbank3.common.exception.ErrorResponse;
 import com.hrbank3.hrbank3.dto.CursorPageResponseDto;
 import com.hrbank3.hrbank3.dto.audit_history.ChangeLogDetailDto;
 import com.hrbank3.hrbank3.dto.audit_history.ChangeLogDto;
-import com.hrbank3.hrbank3.repository.condition.ChangeLogSearchCondition;
+import com.hrbank3.hrbank3.dto.audit_history.ChangeLogSearchCondition;
 import com.hrbank3.hrbank3.service.EmployeeAuditHistoryService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;

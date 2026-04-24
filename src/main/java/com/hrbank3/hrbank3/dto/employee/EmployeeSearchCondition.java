@@ -1,4 +1,4 @@
-package com.hrbank3.hrbank3.repository.condition;
+package com.hrbank3.hrbank3.dto.employee;
 
 import com.hrbank3.hrbank3.entity.enums.EmployeeStatus;
 import java.time.LocalDate;

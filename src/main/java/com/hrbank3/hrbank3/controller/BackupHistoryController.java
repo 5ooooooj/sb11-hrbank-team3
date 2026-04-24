@@ -1,9 +1,9 @@
 package com.hrbank3.hrbank3.controller;
 
 import com.hrbank3.hrbank3.common.util.IpExtractUtil;
-import com.hrbank3.hrbank3.dto.backupHistory.BackupHistoryDto;
-import com.hrbank3.hrbank3.dto.backupHistory.BackupHistorySearchRequest;
-import com.hrbank3.hrbank3.dto.backupHistory.CursorPageResponseBackupDto;
+import com.hrbank3.hrbank3.dto.backup_history.BackupHistoryDto;
+import com.hrbank3.hrbank3.dto.backup_history.BackupHistorySearchRequest;
+import com.hrbank3.hrbank3.dto.backup_history.CursorPageResponseBackupDto;
 import com.hrbank3.hrbank3.entity.enums.BackupStatus;
 import com.hrbank3.hrbank3.service.BackupHistoryService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -25,6 +25,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/api/backups")
 @RequiredArgsConstructor
 public class BackupHistoryController {
+
 
   private final BackupHistoryService backupHistoryService;
 

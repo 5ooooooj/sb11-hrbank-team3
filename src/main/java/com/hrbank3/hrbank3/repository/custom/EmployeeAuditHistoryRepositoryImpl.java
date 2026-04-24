@@ -11,6 +11,7 @@ import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
@@ -106,21 +107,21 @@ public class EmployeeAuditHistoryRepositoryImpl implements EmployeeAuditHistoryR
     return StringUtils.hasText(ipAddress) ? history.ipAddress.contains(ipAddress) : null;
   }
 
-  private BooleanExpression createdAtBetween(java.time.ZonedDateTime from,
-      java.time.ZonedDateTime to) {
+  private BooleanExpression createdAtBetween(Instant from, Instant to) {
     if (from == null && to == null) {
       return null;
     }
-    Instant fromInstant = from != null ? from.toInstant() : null;
-    Instant toInstant = to != null ? to.plusDays(1).minusNanos(1).toInstant() : null;
 
-    if (fromInstant == null) {
-      return history.createdAt.loe(toInstant);
+    Instant endOfTo =
+        to != null ? to.plus(1, ChronoUnit.DAYS).minusNanos(1) : null;
+
+    if (from == null) {
+      return history.createdAt.loe(endOfTo);
     }
-    if (toInstant == null) {
-      return history.createdAt.goe(fromInstant);
+    if (endOfTo == null) {
+      return history.createdAt.goe(from);
     }
-    return history.createdAt.between(fromInstant, toInstant);
+    return history.createdAt.between(from, endOfTo);
   }
 
   /*커서 및 정렬 로직*/

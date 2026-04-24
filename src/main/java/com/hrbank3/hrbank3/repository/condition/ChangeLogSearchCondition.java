@@ -2,7 +2,7 @@ package com.hrbank3.hrbank3.repository.condition;
 
 import com.hrbank3.hrbank3.entity.enums.AuditType;
 import io.swagger.v3.oas.annotations.Parameter;
-import java.time.ZonedDateTime;
+import java.time.Instant;
 
 public record ChangeLogSearchCondition(
 
@@ -20,10 +20,10 @@ public record ChangeLogSearchCondition(
     String ipAddress,
 
     @Parameter(description = "수정 일시(부터)")
-    ZonedDateTime atFrom,
+    Instant atFrom,
 
     @Parameter(description = "수정 일시(까지)")
-    ZonedDateTime atTo,
+    Instant atTo,
 
     // 페이징 및 정렬
     @Parameter(description = "이전 페이지 마지막 요소 ID")

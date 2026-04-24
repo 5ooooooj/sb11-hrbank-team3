@@ -128,7 +128,7 @@ public class EmployeeAuditHistoryService {
 
     return new ChangeLogDetailDto(
         audit.getId(),
-        audit.getAuditType().name(),
+        audit.getAuditType(),
         audit.getTargetEmployeeNo(),
         audit.getMemo(),
         audit.getIpAddress(),

@@ -72,7 +72,7 @@ public class EmployeeService {
           savedEmployee.getEmployeeNumber(),
           new HashMap<>(), // Before: 없음
           extractEmployeeData(savedEmployee), // After: 변경 내역
-          "신규 직원 등록"
+          request.memo()
       ));
 
       return toDto(savedEmployee);
@@ -164,7 +164,7 @@ public class EmployeeService {
         employee.getEmployeeNumber(),
         beforeData,                     // Before: 미리 찍어둔 스냅샷
         extractEmployeeData(employee),  // After: 수정이 완료된 상태
-        "직원 정보 수정"
+        request.memo()
     ));
 
     return toDto(employee);
@@ -193,7 +193,7 @@ public class EmployeeService {
         employee.getEmployeeNumber(),
         beforeData,       // Before: 삭제 전 데이터
         new HashMap<>(),  // After: 없음
-        "직원 영구 삭제"
+        "직원 삭제"
     ));
   }
 
@@ -221,7 +221,7 @@ public class EmployeeService {
 
   private EmployeeDto toDto(Employee employee) {
     String profileImageUrl = null;
-    if(employee.getProfileImage() != null) {
+    if (employee.getProfileImage() != null) {
       profileImageUrl = "/uploads/" + employee.getProfileImage().getStoragePath();
     }
 

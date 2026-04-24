@@ -6,6 +6,7 @@ import com.hrbank3.hrbank3.dto.audit_history.ChangeLogDetailDto;
 import com.hrbank3.hrbank3.dto.audit_history.ChangeLogDto;
 import com.hrbank3.hrbank3.dto.audit_history.DiffDto;
 import com.hrbank3.hrbank3.entity.EmployeeAuditHistory;
+import com.hrbank3.hrbank3.entity.enums.AuditSortField;
 import com.hrbank3.hrbank3.entity.enums.AuditType;
 import com.hrbank3.hrbank3.event.EmployeeAuditEvent;
 import com.hrbank3.hrbank3.repository.EmployeeAuditHistoryRepository;
@@ -96,9 +97,36 @@ public class EmployeeAuditHistoryService {
 
   @Transactional(readOnly = true)
   public CursorPageResponseDto<ChangeLogDto> findAll(ChangeLogSearchCondition condition) {
-    validatePaginationParams(condition.getCursor(), condition.getIdAfter());
+    validatePaginationParams(condition.cursor(), condition.idAfter());
 
-    return customAuditRepository.findAllWithCursor(condition);
+    List<ChangeLogDto> results = customAuditRepository.findChangeLogs(condition);
+
+    boolean hasNext = results.size() > condition.size();
+    if (hasNext) {
+      results = results.subList(0, condition.size());
+    }
+
+    long totalElements = 0L;
+    if (!StringUtils.hasText(condition.cursor())) {
+      totalElements = customAuditRepository.countChangeLogs(condition);
+    }
+
+    // 다음 페이지를 위한 커서 값 생성
+    String nextCursor = null;
+    Long nextIdAfter = null;
+    if (hasNext) {
+      ChangeLogDto lastItem = results.get(results.size() - 1);
+      nextIdAfter = lastItem.id();
+
+      if (condition.sortField() == AuditSortField.IP_ADDRESS) {
+        nextCursor = lastItem.ipAddress();
+      } else {
+        nextCursor = (lastItem.at() != null) ? lastItem.at().toString() : null;
+      }
+    }
+
+    return new CursorPageResponseDto<>(
+        results, nextCursor, nextIdAfter, results.size(), totalElements, hasNext);
   }
 
   // 상세 데이터 읽기
@@ -128,7 +156,7 @@ public class EmployeeAuditHistoryService {
 
     return new ChangeLogDetailDto(
         audit.getId(),
-        audit.getAuditType().name(),
+        audit.getAuditType(),
         audit.getTargetEmployeeNo(),
         audit.getMemo(),
         audit.getIpAddress(),

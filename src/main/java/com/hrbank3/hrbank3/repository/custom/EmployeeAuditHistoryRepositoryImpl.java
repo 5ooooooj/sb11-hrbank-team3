@@ -36,9 +36,13 @@ public class EmployeeAuditHistoryRepositoryImpl implements EmployeeAuditHistoryR
         .and(createdAtBetween(condition.atFrom(), condition.atTo()));
 
     // 전체 데이터 개수 조회
-    long totalElements = Optional.ofNullable(
-        queryFactory.select(history.count()).from(history).where(builder).fetchOne()
-    ).orElse(0L);
+    // 초기로딩 1회만 count 쿼리를 실행하여 불필요한 쿼리 생략하여 성능 개선
+    long totalElements = 0L;
+    if (!StringUtils.hasText(condition.cursor())) {
+      totalElements = Optional.ofNullable(
+          queryFactory.select(history.count()).from(history).where(builder).fetchOne()
+      ).orElse(0L);
+    }
 
     // 커서 페이징 조건 추가
     builder.and(

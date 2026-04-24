@@ -1,5 +1,6 @@
 package com.hrbank3.hrbank3.repository.condition;
 
+import com.hrbank3.hrbank3.entity.enums.AuditSortField;
 import com.hrbank3.hrbank3.entity.enums.AuditType;
 import io.swagger.v3.oas.annotations.Parameter;
 import java.time.Instant;
@@ -36,7 +37,7 @@ public record ChangeLogSearchCondition(
     Integer size,
 
     @Parameter(description = "정렬 필드 (ipAddress, at")
-    String sortField,
+    AuditSortField sortField,
 
     @Parameter(description = "정렬 방향 (asc, desc)")
     String sortDirection
@@ -48,7 +49,7 @@ public record ChangeLogSearchCondition(
       size = 1;
     }
     if (sortField == null) {
-      sortField = "at";
+      sortField = AuditSortField.AT;
     }
     if (sortDirection == null) {
       sortDirection = "desc";

@@ -2,6 +2,7 @@ package com.hrbank3.hrbank3.repository.custom;
 
 import com.hrbank3.hrbank3.dto.audit_history.ChangeLogDto;
 import com.hrbank3.hrbank3.entity.QEmployeeAuditHistory;
+import com.hrbank3.hrbank3.entity.enums.AuditSortField;
 import com.hrbank3.hrbank3.entity.enums.AuditType;
 import com.hrbank3.hrbank3.repository.condition.ChangeLogSearchCondition;
 import com.querydsl.core.BooleanBuilder;
@@ -108,7 +109,7 @@ public class EmployeeAuditHistoryRepositoryImpl implements EmployeeAuditHistoryR
   /*커서 및 정렬 로직*/
 
   // 동적 커서 비교 로직
-  private BooleanExpression cursorCondition(String cursor, Long lastId, String sortField,
+  private BooleanExpression cursorCondition(String cursor, Long lastId, AuditSortField sortField,
       String sortDirection) {
 
     if (!StringUtils.hasText(cursor) || lastId == null) {
@@ -117,8 +118,7 @@ public class EmployeeAuditHistoryRepositoryImpl implements EmployeeAuditHistoryR
 
     boolean isAsc = "asc".equalsIgnoreCase(sortDirection);
 
-    if ("ipAddress".equals(sortField)) {
-      // IP 정렬일 때 커서 처리
+    if (sortField == AuditSortField.IP_ADDRESS) {
       if (isAsc) {
         return history.ipAddress.gt(cursor)
             .or(history.ipAddress.eq(cursor).and(history.id.gt(lastId)));
@@ -140,10 +140,11 @@ public class EmployeeAuditHistoryRepositoryImpl implements EmployeeAuditHistoryR
   }
 
   // 동적 정렬 로직
-  private OrderSpecifier<?>[] resolveOrderSpecifiers(String sortField, String sortDirection) {
+  private OrderSpecifier<?>[] resolveOrderSpecifiers(AuditSortField sortField,
+      String sortDirection) {
     boolean isAsc = "asc".equalsIgnoreCase(sortDirection);
 
-    if ("ipAddress".equals(sortField)) {
+    if (sortField == AuditSortField.IP_ADDRESS) {
       return new OrderSpecifier[]{
           isAsc ? history.ipAddress.asc() : history.ipAddress.desc(),
           isAsc ? history.id.asc() : history.id.desc()

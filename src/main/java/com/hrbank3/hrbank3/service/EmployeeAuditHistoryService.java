@@ -6,6 +6,7 @@ import com.hrbank3.hrbank3.dto.audit_history.ChangeLogDetailDto;
 import com.hrbank3.hrbank3.dto.audit_history.ChangeLogDto;
 import com.hrbank3.hrbank3.dto.audit_history.DiffDto;
 import com.hrbank3.hrbank3.entity.EmployeeAuditHistory;
+import com.hrbank3.hrbank3.entity.enums.AuditSortField;
 import com.hrbank3.hrbank3.entity.enums.AuditType;
 import com.hrbank3.hrbank3.event.EmployeeAuditEvent;
 import com.hrbank3.hrbank3.repository.EmployeeAuditHistoryRepository;
@@ -116,10 +117,12 @@ public class EmployeeAuditHistoryService {
     if (hasNext) {
       ChangeLogDto lastItem = results.get(results.size() - 1);
       nextIdAfter = lastItem.id();
-      // 시간/IP주소 정렬 기준에 따라 다음 커서값 세팅
-      nextCursor = "ipAddress".equals(condition.sortField())
-          ? lastItem.ipAddress()
-          : lastItem.at().toString();
+
+      if (condition.sortField() == AuditSortField.IP_ADDRESS) {
+        nextCursor = lastItem.ipAddress();
+      } else {
+        nextCursor = (lastItem.at() != null) ? lastItem.at().toString() : null;
+      }
     }
 
     return new CursorPageResponseDto<>(

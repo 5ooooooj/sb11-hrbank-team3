@@ -4,13 +4,14 @@ import com.hrbank3.hrbank3.common.util.IpExtractUtil;
 import com.hrbank3.hrbank3.dto.CursorPageResponseDto;
 import com.hrbank3.hrbank3.dto.audit_history.ChangeLogDetailDto;
 import com.hrbank3.hrbank3.dto.audit_history.ChangeLogDto;
+import com.hrbank3.hrbank3.dto.audit_history.ChangeLogSearchCondition;
 import com.hrbank3.hrbank3.dto.audit_history.DiffDto;
 import com.hrbank3.hrbank3.entity.EmployeeAuditHistory;
+import com.hrbank3.hrbank3.entity.enums.AuditSortField;
 import com.hrbank3.hrbank3.entity.enums.AuditType;
 import com.hrbank3.hrbank3.event.EmployeeAuditEvent;
 import com.hrbank3.hrbank3.repository.EmployeeAuditHistoryRepository;
 import com.hrbank3.hrbank3.repository.EmployeeRepository;
-import com.hrbank3.hrbank3.repository.condition.ChangeLogSearchCondition;
 import com.hrbank3.hrbank3.repository.custom.EmployeeAuditHistoryRepositoryCustom;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
@@ -18,14 +19,19 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.NoSuchElementException;
 import java.util.Objects;
 import java.util.Set;
 import lombok.RequiredArgsConstructor;
-import org.springframework.context.event.EventListener;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.event.TransactionPhase;
+import org.springframework.transaction.event.TransactionalEventListener;
 import org.springframework.util.StringUtils;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class EmployeeAuditHistoryService {
@@ -34,9 +40,15 @@ public class EmployeeAuditHistoryService {
   private final EmployeeAuditHistoryRepositoryCustom customAuditRepository;
   private final EmployeeRepository employeeRepository;
 
-  // 직원 정보 수정 시 발생하는 핸들링
-  @Transactional
-  @EventListener
+
+  /*
+   * 직원 정보 수정 시 발생하는 이벤트 핸들링
+   * 메인 비즈니스 로직의 응답 속도 저하를 막고,
+   * 이력 저장이 실패하더라도 메인 트랜잭션이 롤백되지 않도록
+   * 의도적으로 비동기 처리(@Async) 및 트랜잭션을 분리(AFTER_COMMIT)하였습니다.
+   */
+  @Async
+  @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
   public void recordAuditHistory(EmployeeAuditEvent event) {
     Map<String, Object> changedContent = extractDiff(event.beforeData(), event.afterData());
 
@@ -69,12 +81,15 @@ public class EmployeeAuditHistoryService {
     }
 
     for (String key : allKeys) {
-      Object before =
-          (beforeData != null && beforeData.get(key) != null) ? beforeData.get(key) : "-";
-      Object after = (afterData != null && afterData.get(key) != null) ? afterData.get(key) : "-";
+      Object before = (beforeData != null) ? beforeData.get(key) : null;
+      Object after = (afterData != null) ? afterData.get(key) : null;
 
       if (!Objects.equals(before, after)) {
-        diffMap.put(key, Map.of("before", before, "after", after));
+        Map<String, Object> diffEntry = new HashMap<>();
+        diffEntry.put("before", before);
+        diffEntry.put("after", after);
+
+        diffMap.put(key, diffEntry);
       }
     }
     return diffMap;
@@ -82,16 +97,43 @@ public class EmployeeAuditHistoryService {
 
   @Transactional(readOnly = true)
   public CursorPageResponseDto<ChangeLogDto> findAll(ChangeLogSearchCondition condition) {
-    validatePaginationParams(condition.getCursor(), condition.getIdAfter());
+    validatePaginationParams(condition.cursor(), condition.idAfter());
 
-    return customAuditRepository.findAllWithCursor(condition);
+    List<ChangeLogDto> results = customAuditRepository.findChangeLogs(condition);
+
+    boolean hasNext = results.size() > condition.size();
+    if (hasNext) {
+      results = results.subList(0, condition.size());
+    }
+
+    long totalElements = 0L;
+    if (!StringUtils.hasText(condition.cursor())) {
+      totalElements = customAuditRepository.countChangeLogs(condition);
+    }
+
+    // 다음 페이지를 위한 커서 값 생성
+    String nextCursor = null;
+    Long nextIdAfter = null;
+    if (hasNext) {
+      ChangeLogDto lastItem = results.get(results.size() - 1);
+      nextIdAfter = lastItem.id();
+
+      if (condition.sortField() == AuditSortField.IP_ADDRESS) {
+        nextCursor = lastItem.ipAddress();
+      } else {
+        nextCursor = (lastItem.at() != null) ? lastItem.at().toString() : null;
+      }
+    }
+
+    return new CursorPageResponseDto<>(
+        results, nextCursor, nextIdAfter, results.size(), totalElements, hasNext);
   }
 
   // 상세 데이터 읽기
   @Transactional(readOnly = true)
   public ChangeLogDetailDto find(Long id) {
     EmployeeAuditHistory audit = auditRepository.findById(id)
-        .orElseThrow(() -> new IllegalArgumentException("이력을 찾을 수 없습니다."));
+        .orElseThrow(() -> new NoSuchElementException("이력을 찾을 수 없습니다."));
 
     List<DiffDto> diffs = audit.getChangedContent().entrySet().stream()
         .map(entry -> {
@@ -100,11 +142,13 @@ public class EmployeeAuditHistoryService {
             return new DiffDto(entry.getKey(), "-", "-");
           }
 
-          return new DiffDto(
-              entry.getKey(),
-              String.valueOf(values.get("before")),
-              String.valueOf(values.get("after"))
-          );
+          Object beforeRaw = values.get("before");
+          Object afterRaw = values.get("after");
+
+          String beforeStr = beforeRaw == null ? null : String.valueOf(beforeRaw);
+          String afterStr = afterRaw == null ? null : String.valueOf(afterRaw);
+
+          return new DiffDto(entry.getKey(), beforeStr, afterStr);
         })
         .toList();
 
@@ -112,7 +156,7 @@ public class EmployeeAuditHistoryService {
 
     return new ChangeLogDetailDto(
         audit.getId(),
-        audit.getAuditType().name(),
+        audit.getAuditType(),
         audit.getTargetEmployeeNo(),
         audit.getMemo(),
         audit.getIpAddress(),
@@ -135,15 +179,18 @@ public class EmployeeAuditHistoryService {
             String recoveredName = diffs.stream()
                 .filter(d -> "name".equals(d.propertyName()))
                 .map(DiffDto::before)
+                .filter(val -> val != null && !"-".equals(val))
                 .findFirst()
-                .filter(val -> !"-".equals(val) && !"null".equals(val))
-                .orElse(null);
+                .orElseGet(() -> {
+                  log.warn("직원 사번 스냅샷 복원 실패: {}", audit.getId());
+                  return null;
+                });
 
             Long recoveredProfileId = diffs.stream()
                 .filter(d -> "profileImageId".equals(d.propertyName()))
                 .map(DiffDto::before)
+                .filter(val -> val != null && !"-".equals(val))
                 .findFirst()
-                .filter(val -> !"-".equals(val) && !"null".equals(val))
                 .map(val -> {
                   try {
                     return Long.parseLong(val);
@@ -151,7 +198,10 @@ public class EmployeeAuditHistoryService {
                     return null;
                   }
                 })
-                .orElse(null);
+                .orElseGet(() -> {
+                  log.info("직원 프로필 아이디 스냅샷 복원 실패: {}", audit.getId());
+                  return null;
+                });
             return new EmployeeInfo(recoveredName, recoveredProfileId);
           }
           return new EmployeeInfo(null, null);

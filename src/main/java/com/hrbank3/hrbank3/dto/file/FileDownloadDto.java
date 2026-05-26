@@ -6,4 +6,6 @@ public record FileDownloadDto(
     Resource resource,
     String originalName,
     String contentType
-) {}
+) {
+
+}

@@ -1,7 +1,5 @@
-package com.hrbank3.hrbank3.dto.backupHistory;
+package com.hrbank3.hrbank3.dto.backup_history;
 
-import com.hrbank3.hrbank3.entity.BackupHistory;
-import java.time.ZoneId;
 import java.time.ZonedDateTime;
 
 public record BackupHistoryDto(
@@ -12,4 +10,5 @@ public record BackupHistoryDto(
     String status,
     Long fileId // FileMetaData에서 id만 추출
 ) {
+
 }

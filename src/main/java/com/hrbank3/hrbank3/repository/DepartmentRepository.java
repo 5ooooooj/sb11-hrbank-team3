@@ -3,6 +3,7 @@ package com.hrbank3.hrbank3.repository;
 import com.hrbank3.hrbank3.dto.dashboard.DepartmentDistributionDto;
 import com.hrbank3.hrbank3.entity.Department;
 import com.hrbank3.hrbank3.entity.enums.EmployeeStatus;
+import com.hrbank3.hrbank3.repository.custom.DepartmentRepositoryCustom;
 import java.util.List;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;

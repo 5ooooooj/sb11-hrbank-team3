@@ -1,4 +1,4 @@
-package com.hrbank3.hrbank3.dto.backupHistory;
+package com.hrbank3.hrbank3.dto.backup_history;
 
 import com.hrbank3.hrbank3.entity.enums.BackupHistorySortType;
 import java.util.Base64;
@@ -12,6 +12,7 @@ public record CursorPageResponseBackupDto(
     long totalElements,
     boolean hasNext
 ) {
+
   public static CursorPageResponseBackupDto of(
       List<BackupHistoryDto> content,
       boolean hasNext,
@@ -26,8 +27,7 @@ public record CursorPageResponseBackupDto(
       String cursorBase = switch (sortType) {
         case ENDED_AT_ASC, ENDED_AT_DESC ->
             content.get(content.size() - 1).endedAt().toInstant().toString();
-        case STATUS_ASC, STATUS_DESC ->
-            content.get(content.size() - 1).status();
+        case STATUS_ASC, STATUS_DESC -> content.get(content.size() - 1).status();
         case STARTED_AT_ASC, STARTED_AT_DESC ->
             content.get(content.size() - 1).startedAt().toInstant().toString();
       };

@@ -1,18 +1,18 @@
 package com.hrbank3.hrbank3.service;
 
-import com.hrbank3.hrbank3.dto.backupHistory.BackupHistoryDto;
-import com.hrbank3.hrbank3.dto.backupHistory.CursorPageResponseBackupDto;
+import com.hrbank3.hrbank3.dto.backup_history.BackupHistoryDto;
+import com.hrbank3.hrbank3.dto.backup_history.BackupHistorySearchCondition;
+import com.hrbank3.hrbank3.dto.backup_history.CursorPageResponseBackupDto;
+import com.hrbank3.hrbank3.entity.BackupHistory;
 import com.hrbank3.hrbank3.entity.Department;
 import com.hrbank3.hrbank3.entity.Employee;
 import com.hrbank3.hrbank3.entity.FileMetadata;
-import com.hrbank3.hrbank3.event.BackupNotificationEvent;
-import com.hrbank3.hrbank3.repository.DepartmentRepository;
-import com.hrbank3.hrbank3.repository.EmployeeRepository;
-import com.hrbank3.hrbank3.entity.BackupHistory;
 import com.hrbank3.hrbank3.entity.enums.BackupStatus;
+import com.hrbank3.hrbank3.event.BackupNotificationEvent;
 import com.hrbank3.hrbank3.mapper.BackupHistoryMapper;
 import com.hrbank3.hrbank3.repository.BackupHistoryRepository;
-import com.hrbank3.hrbank3.repository.condition.BackupHistorySearchCondition;
+import com.hrbank3.hrbank3.repository.DepartmentRepository;
+import com.hrbank3.hrbank3.repository.EmployeeRepository;
 import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -29,7 +29,6 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
-
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.PageRequest;
@@ -188,11 +187,10 @@ public class BackupHistoryService {
         + ".log";
     Path logPath = Paths.get(backupDir, fileName);
 
-
     Files.createDirectories(logPath.getParent());
     try (BufferedWriter writer = Files.newBufferedWriter(logPath, StandardCharsets.UTF_8);
         PrintWriter printWriter = new PrintWriter(writer)) {
-        e.printStackTrace(printWriter); // 전체 스택트레이스 출력
+      e.printStackTrace(printWriter); // 전체 스택트레이스 출력
     }
 
     return logPath;

@@ -1,17 +1,17 @@
 package com.hrbank3.hrbank3.repository.custom;
 
-import com.hrbank3.hrbank3.entity.enums.BackupStatus;
+import com.hrbank3.hrbank3.dto.backup_history.BackupHistorySearchCondition;
+import com.hrbank3.hrbank3.entity.BackupHistory;
 import com.hrbank3.hrbank3.entity.QBackupHistory;
 import com.hrbank3.hrbank3.entity.enums.BackupHistorySortType;
+import com.hrbank3.hrbank3.entity.enums.BackupStatus;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.dsl.BooleanExpression;
+import com.querydsl.jpa.impl.JPAQueryFactory;
 import java.time.Instant;
 import java.time.ZonedDateTime;
 import java.util.Base64;
 import java.util.List;
-import com.hrbank3.hrbank3.entity.BackupHistory;
-import com.hrbank3.hrbank3.repository.condition.BackupHistorySearchCondition;
-import com.querydsl.jpa.impl.JPAQueryFactory;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
@@ -19,7 +19,8 @@ import org.springframework.util.StringUtils;
 
 @Repository
 @RequiredArgsConstructor
-public class BackupHistoryRepositoryImpl implements BackupHistoryRepositoryCustom{
+public class BackupHistoryRepositoryImpl implements BackupHistoryRepositoryCustom {
+
   private final JPAQueryFactory queryFactory;
   private final QBackupHistory backupHistory = QBackupHistory.backupHistory;
 
@@ -65,14 +66,20 @@ public class BackupHistoryRepositoryImpl implements BackupHistoryRepositoryCusto
 
   // 시작시간 범위 일치 조회를 위한 메소드
   private BooleanExpression startedAtBetween(ZonedDateTime from, ZonedDateTime to) {
-    if (from == null && to == null) return null;
+    if (from == null && to == null) {
+      return null;
+    }
 
     // 조회를 위한 Instant 변환
     Instant fromInstant = from != null ? from.toInstant() : null;
     Instant toInstant = to != null ? to.plusDays(1).minusNanos(1).toInstant() : null;
 
-    if (fromInstant == null) return backupHistory.startedAt.loe(toInstant);
-    if (toInstant == null) return backupHistory.startedAt.goe(fromInstant);
+    if (fromInstant == null) {
+      return backupHistory.startedAt.loe(toInstant);
+    }
+    if (toInstant == null) {
+      return backupHistory.startedAt.goe(fromInstant);
+    }
     return backupHistory.startedAt.between(fromInstant, toInstant);
   }
 
@@ -85,9 +92,12 @@ public class BackupHistoryRepositoryImpl implements BackupHistoryRepositoryCusto
 
   // 어디서부터 가져올지 정하는 메소드
   // gt = great than, lt = less than
-  private BooleanExpression cursorCondition(String cursor, Long lastId, BackupHistorySortType sortType) {
+  private BooleanExpression cursorCondition(String cursor, Long lastId,
+      BackupHistorySortType sortType) {
     // cursor나 lastId가 없으면 첫 페이지이므로 조건 없음
-    if (cursor == null && lastId == null) return null;
+    if (cursor == null && lastId == null) {
+      return null;
+    }
     if (cursor == null || lastId == null) {
       throw new IllegalArgumentException("cursor와 lastId는 함께 전달되어야 합니다");
     }
@@ -97,8 +107,8 @@ public class BackupHistoryRepositoryImpl implements BackupHistoryRepositoryCusto
 
     return switch (sortType) {
       case STARTED_AT_ASC ->
-          // 오름차순: 마지막 요소보다 startedAt이 큰 것을 가져옴
-          // 단, startedAt이 같으면 id가 더 큰 것을 가져옴
+      // 오름차순: 마지막 요소보다 startedAt이 큰 것을 가져옴
+      // 단, startedAt이 같으면 id가 더 큰 것을 가져옴
       {
         Instant cursorInstant = Instant.parse(decodedCursor);
         yield backupHistory.startedAt.gt(cursorInstant)
@@ -106,8 +116,8 @@ public class BackupHistoryRepositoryImpl implements BackupHistoryRepositoryCusto
                 .and(backupHistory.id.gt(lastId)));
       }
       case STARTED_AT_DESC ->
-          // 내림차순: 마지막 요소보다 startedAt이 더 작은 것을 가져옴
-          // 단, startedAt이 같으면 id가 더 작은 것을 가져옴
+      // 내림차순: 마지막 요소보다 startedAt이 더 작은 것을 가져옴
+      // 단, startedAt이 같으면 id가 더 작은 것을 가져옴
       {
         Instant cursorInstant = Instant.parse(decodedCursor);
         yield backupHistory.startedAt.lt(cursorInstant)
@@ -129,10 +139,9 @@ public class BackupHistoryRepositoryImpl implements BackupHistoryRepositoryCusto
       case STATUS_ASC ->
         // status 값도 cursor에 담아서 비교
           backupHistory.status.stringValue().gt(decodedCursor)
-          .or(backupHistory.status.stringValue().eq(decodedCursor)
-              .and(backupHistory.id.gt(lastId)));
-      case STATUS_DESC
-          -> backupHistory.status.stringValue().lt(decodedCursor)
+              .or(backupHistory.status.stringValue().eq(decodedCursor)
+                  .and(backupHistory.id.gt(lastId)));
+      case STATUS_DESC -> backupHistory.status.stringValue().lt(decodedCursor)
           .or(backupHistory.status.stringValue().eq(decodedCursor)
               .and(backupHistory.id.lt(lastId)));
     };
@@ -141,7 +150,9 @@ public class BackupHistoryRepositoryImpl implements BackupHistoryRepositoryCusto
   // 어떤 순서로 정렬할지 정하는 메서드
   private OrderSpecifier<?> resolveOrderBy(BackupHistorySortType sortType) {
     // 기본값
-    if (sortType == null) return backupHistory.startedAt.desc();
+    if (sortType == null) {
+      return backupHistory.startedAt.desc();
+    }
 
     return switch (sortType) {
       case STARTED_AT_ASC -> backupHistory.startedAt.asc();

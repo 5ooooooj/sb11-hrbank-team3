@@ -1,4 +1,4 @@
-package com.hrbank3.hrbank3.repository.condition;
+package com.hrbank3.hrbank3.dto.backup_history;
 
 import com.hrbank3.hrbank3.entity.enums.BackupHistorySortType;
 import com.hrbank3.hrbank3.entity.enums.BackupStatus;
@@ -13,6 +13,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class BackupHistorySearchCondition {
+
   private String worker;
   // 프론트에선 한국 기준으로 보여주므로 ZonedDateTime 사용
   private ZonedDateTime startedAtFrom;
